@@ -1,7 +1,7 @@
 {
 	"Name": "meadow",
-	"Version": "2.0.33",
+	"Version": "2.0.41",
 	"Description": "A data access library.",
-	"GeneratedAt": "2026-04-10T17:22:06.723Z",
-	"GitCommit": "8aa8f87"
+	"GeneratedAt": "2026-05-21T17:20:48.745Z",
+	"GitCommit": "25b51c0"
 }
