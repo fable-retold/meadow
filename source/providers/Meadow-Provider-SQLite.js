@@ -105,6 +105,54 @@ var MeadowProvider = function ()
 			return pParams;
 		};
 
+		/**
+		 * Filter a named-parameters object down to only those keys whose
+		 * `:name` form appears in the SQL body.
+		 *
+		 * node:sqlite is strict about unknown named parameters — passing
+		 * a key the prepared statement doesn't reference throws
+		 * `Unknown named parameter '<name>'`.  better-sqlite3 was lenient
+		 * about extras, so this regressed silently when
+		 * meadow-connection-sqlite switched to node:sqlite.  It matters
+		 * whenever Meadow.rawQueries.loadQuery installs an override SQL
+		 * whose placeholders are a strict subset of meadow's auto-
+		 * generated params (filter columns, soft-delete tracking,
+		 * AutoGUID conflict-check), but the filter is cheap and applied
+		 * uniformly — also protects any future case where the auto-built
+		 * SQL and the params dict drift apart.
+		 *
+		 * Approach mirrors `convertNamedToPositional` in the PostgreSQL
+		 * provider: walk the SQL with /:([A-Za-z_][A-Za-z0-9_]*)/g, keep
+		 * names that exist in the params dict, leave the literal alone
+		 * otherwise (handles `::typecast`-style sequences without
+		 * tripping).  Over-matches inside string literals are harmless
+		 * because we only ever *keep* params — never invent them.
+		 */
+		var filterUsedNamedParams = function (pQueryBody, pNamedParams)
+		{
+			if (typeof (pNamedParams) !== 'object' || pNamedParams === null)
+			{
+				return pNamedParams;
+			}
+			if (typeof (pQueryBody) !== 'string')
+			{
+				return pNamedParams;
+			}
+
+			var tmpUsed = {};
+			var tmpPattern = /:([A-Za-z_][A-Za-z0-9_]*)/g;
+			var tmpMatch;
+			while ((tmpMatch = tmpPattern.exec(pQueryBody)) !== null)
+			{
+				var tmpName = tmpMatch[1];
+				if (Object.prototype.hasOwnProperty.call(pNamedParams, tmpName))
+				{
+					tmpUsed[tmpName] = pNamedParams[tmpName];
+				}
+			}
+			return tmpUsed;
+		};
+
 		// The Meadow marshaller passes in the Schema as the third parameter for JSON/JSONProxy deserialization.
 		var marshalRecordFromSourceToObject = function (pObject, pRecord, pSchema)
 		{
@@ -173,6 +221,11 @@ var MeadowProvider = function ()
 
 			var tmpQueryBody = fixDateFunctions(pQuery.query.body);
 			coerceParameters(pQuery.query.parameters);
+			// Filter to keys actually referenced as :name in the SQL —
+			// node:sqlite is strict about unknown named parameters, and
+			// meadow auto-generates filter/Deleted/AutoGUID params that
+			// a rawQueries override may not reference.
+			var tmpBindParams = filterUsedNamedParams(tmpQueryBody, pQuery.query.parameters);
 
 			if (pQuery.logLevel > 0)
 			{
@@ -190,7 +243,7 @@ var MeadowProvider = function ()
 				}
 
 				var tmpStatement = tmpDB.prepare(tmpQueryBody);
-				var tmpInfo = tmpStatement.run(pQuery.query.parameters);
+				var tmpInfo = tmpStatement.run(tmpBindParams);
 
 				tmpResult.error = null;
 				tmpResult.value = false;
@@ -222,6 +275,11 @@ var MeadowProvider = function ()
 
 			var tmpQueryBody = fixDateFunctions(pQuery.query.body);
 			coerceParameters(pQuery.query.parameters);
+			// Filter to keys actually referenced as :name in the SQL —
+			// node:sqlite is strict about unknown named parameters, and
+			// meadow auto-generates filter/Deleted/AutoGUID params that
+			// a rawQueries override may not reference.
+			var tmpBindParams = filterUsedNamedParams(tmpQueryBody, pQuery.query.parameters);
 
 			if (pQuery.logLevel > 0)
 			{
@@ -239,7 +297,7 @@ var MeadowProvider = function ()
 				}
 
 				var tmpStatement = tmpDB.prepare(tmpQueryBody);
-				var tmpRows = tmpStatement.all(pQuery.query.parameters);
+				var tmpRows = tmpStatement.all(tmpBindParams);
 
 				tmpResult.error = null;
 				tmpResult.value = tmpRows;
@@ -262,6 +320,11 @@ var MeadowProvider = function ()
 
 			var tmpQueryBody = fixDateFunctions(pQuery.query.body);
 			coerceParameters(pQuery.query.parameters);
+			// Filter to keys actually referenced as :name in the SQL —
+			// node:sqlite is strict about unknown named parameters, and
+			// meadow auto-generates filter/Deleted/AutoGUID params that
+			// a rawQueries override may not reference.
+			var tmpBindParams = filterUsedNamedParams(tmpQueryBody, pQuery.query.parameters);
 
 			if (pQuery.logLevel > 0)
 			{
@@ -279,7 +342,7 @@ var MeadowProvider = function ()
 				}
 
 				var tmpStatement = tmpDB.prepare(tmpQueryBody);
-				var tmpInfo = tmpStatement.run(pQuery.query.parameters);
+				var tmpInfo = tmpStatement.run(tmpBindParams);
 
 				tmpResult.error = null;
 				tmpResult.value = tmpInfo;
@@ -302,6 +365,11 @@ var MeadowProvider = function ()
 
 			var tmpQueryBody = fixDateFunctions(pQuery.query.body);
 			coerceParameters(pQuery.query.parameters);
+			// Filter to keys actually referenced as :name in the SQL —
+			// node:sqlite is strict about unknown named parameters, and
+			// meadow auto-generates filter/Deleted/AutoGUID params that
+			// a rawQueries override may not reference.
+			var tmpBindParams = filterUsedNamedParams(tmpQueryBody, pQuery.query.parameters);
 
 			if (pQuery.logLevel > 0)
 			{
@@ -319,7 +387,7 @@ var MeadowProvider = function ()
 				}
 
 				var tmpStatement = tmpDB.prepare(tmpQueryBody);
-				var tmpInfo = tmpStatement.run(pQuery.query.parameters);
+				var tmpInfo = tmpStatement.run(tmpBindParams);
 
 				tmpResult.error = null;
 				tmpResult.value = false;
@@ -350,6 +418,11 @@ var MeadowProvider = function ()
 
 			var tmpQueryBody = fixDateFunctions(pQuery.query.body);
 			coerceParameters(pQuery.query.parameters);
+			// Filter to keys actually referenced as :name in the SQL —
+			// node:sqlite is strict about unknown named parameters, and
+			// meadow auto-generates filter/Deleted/AutoGUID params that
+			// a rawQueries override may not reference.
+			var tmpBindParams = filterUsedNamedParams(tmpQueryBody, pQuery.query.parameters);
 
 			if (pQuery.logLevel > 0)
 			{
@@ -367,7 +440,7 @@ var MeadowProvider = function ()
 				}
 
 				var tmpStatement = tmpDB.prepare(tmpQueryBody);
-				var tmpInfo = tmpStatement.run(pQuery.query.parameters);
+				var tmpInfo = tmpStatement.run(tmpBindParams);
 
 				tmpResult.error = null;
 				tmpResult.value = false;
@@ -398,6 +471,11 @@ var MeadowProvider = function ()
 
 			var tmpQueryBody = fixDateFunctions(pQuery.query.body);
 			coerceParameters(pQuery.query.parameters);
+			// Filter to keys actually referenced as :name in the SQL —
+			// node:sqlite is strict about unknown named parameters, and
+			// meadow auto-generates filter/Deleted/AutoGUID params that
+			// a rawQueries override may not reference.
+			var tmpBindParams = filterUsedNamedParams(tmpQueryBody, pQuery.query.parameters);
 
 			if (pQuery.logLevel > 0)
 			{
@@ -415,7 +493,7 @@ var MeadowProvider = function ()
 				}
 
 				var tmpStatement = tmpDB.prepare(tmpQueryBody);
-				var tmpRows = tmpStatement.all(pQuery.query.parameters);
+				var tmpRows = tmpStatement.all(tmpBindParams);
 
 				tmpResult.executed = true;
 				tmpResult.error = null;
