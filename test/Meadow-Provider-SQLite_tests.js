@@ -744,8 +744,11 @@ suite
 						testMeadow.doCount(testMeadow.query.setScope('BadTable'),
 							function(pError, pQuery, pRecord)
 							{
+								// chai's type-detect classifies Error instances
+								// as 'error', not 'object' — assert against the
+								// type chai actually returns.
 								Expect(pError)
-									.to.be.an('object');
+									.to.be.an('error');
 								fDone();
 							}
 						)
@@ -1075,6 +1078,245 @@ suite
 									fDone();
 								});
 							});
+						});
+					}
+				);
+			}
+		);
+		suite
+		(
+			'Bulk Create — synchronous chain stack safety',
+			function ()
+			{
+				// Regression for the stack-overflow seen during liveconnect_local
+				// bulk sync: every doCreate runs the libRenameSoftDeletedConflicts
+				// pre-flight, which on a sync provider (node:sqlite) returns its
+				// callback in the same tick. Combined with a synchronous caller
+				// chain (eachLimit's replenish loop, or a tail-recursive driver
+				// like this test), per-record frames accumulate without bound.
+				// The fix is a setImmediate barrier at the pre-flight callback
+				// in Meadow-Create.js so each Create yields to the event loop
+				// before the INSERT runs.
+				var _StackTestSchema =
+				[
+					{ Column: 'IDStackTest',    Type: 'AutoIdentity' },
+					{ Column: 'GUIDStackTest',  Type: 'AutoGUID' },
+					{ Column: 'CreateDate',     Type: 'CreateDate' },
+					{ Column: 'CreatingIDUser', Type: 'CreateIDUser' },
+					{ Column: 'UpdateDate',     Type: 'UpdateDate' },
+					{ Column: 'UpdatingIDUser', Type: 'UpdateIDUser' },
+					{ Column: 'Deleted',        Type: 'Deleted' },
+					{ Column: 'DeleteDate',     Type: 'DeleteDate' },
+					{ Column: 'DeletingIDUser', Type: 'DeleteIDUser' },
+					{ Column: 'Code',           Type: 'String', Unique: true },
+					{ Column: 'Name',           Type: 'String' }
+				];
+				var _StackTestDefault =
+				{
+					IDStackTest: 0,
+					GUIDStackTest: '',
+					CreateDate: false,
+					CreatingIDUser: 0,
+					UpdateDate: false,
+					UpdatingIDUser: 0,
+					Deleted: 0,
+					DeleteDate: false,
+					DeletingIDUser: 0,
+					Code: '',
+					Name: ''
+				};
+
+				var newStackTestMeadow = function ()
+				{
+					return require('../source/Meadow.js').new(libFable, 'StackTest')
+						.setProvider('SQLite')
+						.setSchema(_StackTestSchema)
+						.setJsonSchema({ title: 'StackTest', type: 'object', properties: {}, required: [] })
+						.setDefaultIdentifier('IDStackTest')
+						.setDefault(_StackTestDefault);
+				};
+
+				suiteSetup(function (fDone)
+				{
+					var tmpDB = libFable.MeadowSQLiteProvider.db;
+					tmpDB.exec(
+						'CREATE TABLE IF NOT EXISTS StackTest (' +
+						'  IDStackTest INTEGER PRIMARY KEY AUTOINCREMENT,' +
+						'  GUIDStackTest TEXT NOT NULL DEFAULT \'\',' +
+						'  CreateDate TEXT,' +
+						'  CreatingIDUser INTEGER NOT NULL DEFAULT 0,' +
+						'  UpdateDate TEXT,' +
+						'  UpdatingIDUser INTEGER NOT NULL DEFAULT 0,' +
+						'  Deleted INTEGER NOT NULL DEFAULT 0,' +
+						'  DeleteDate TEXT,' +
+						'  DeletingIDUser INTEGER NOT NULL DEFAULT 0,' +
+						'  Code TEXT NOT NULL DEFAULT \'\',' +
+						'  Name TEXT NOT NULL DEFAULT \'\'' +
+						');' +
+						'CREATE UNIQUE INDEX IF NOT EXISTS stacktest_code_unique ON StackTest(Code);'
+					);
+					return fDone();
+				});
+
+				test
+				(
+					'1500 sync-chained doCreate calls complete without RangeError',
+					function (fDone)
+					{
+						// 1500 was chosen empirically: with a single Unique column
+						// pre-flight (one synchronous Read per Create) plus the
+						// surrounding waterfall steps, per-record frame growth
+						// without the fix exceeds V8's default stack budget well
+						// before reaching this count. With the fix in place each
+						// iteration yields to the event loop, so frame growth is
+						// bounded and the chain completes in O(seconds).
+						this.timeout(30000);
+
+						var tmpRecordCount = 1500;
+						var tmpCreated = 0;
+						var tmpFirstError = null;
+
+						var fCreateNext = function (pIndex)
+						{
+							if (pIndex >= tmpRecordCount)
+							{
+								Expect(tmpFirstError, tmpFirstError && tmpFirstError.message).to.not.exist;
+								Expect(tmpCreated).to.equal(tmpRecordCount);
+								return fDone();
+							}
+
+							var tmpMeadow = newStackTestMeadow().setIDUser(1);
+							var tmpQuery = tmpMeadow.query.addRecord(
+								{
+									Code: 'stack-' + pIndex,
+									Name: 'row-' + pIndex
+								});
+
+							// Caller invokes the next iteration synchronously
+							// inside doCreate's terminal callback — the exact
+							// pattern that surfaced the bug.  Without the
+							// setImmediate barrier inside Meadow-Create, this
+							// chain stack-overflows in node:sqlite mid-loop.
+							tmpMeadow.doCreate(tmpQuery, function (pError)
+							{
+								if (pError && !tmpFirstError)
+								{
+									tmpFirstError = pError;
+								}
+								else if (!pError)
+								{
+									tmpCreated++;
+								}
+								return fCreateNext(pIndex + 1);
+							});
+						};
+
+						fCreateNext(0);
+					}
+				);
+			}
+		);
+		suite
+		(
+			'Raw query overrides — parameter handling',
+			function ()
+			{
+				// EXPECTED FAILING (until provider fix lands).
+				//
+				// When rawQueries.loadQuery installs a Read override that
+				// doesn't reference some of the named parameters meadow's
+				// query builder auto-generates (e.g. the soft-delete filter
+				// `Deleted_w1`, or a user-added filter like `IDWidget_w0`),
+				// the SQLite provider still binds them via
+				// `statement.all(pQuery.query.parameters)`.  node:sqlite is
+				// strict about unknown named parameters and throws
+				// `Unknown named parameter '<name>'` — better-sqlite3 was
+				// lenient about extras, so this regressed silently when
+				// meadow-connection-sqlite switched to node:sqlite.
+				//
+				// Isolation: dedicated table + raw-query file with no
+				// placeholders, so the test doesn't depend on FableTest
+				// state mutated by earlier suites.
+				var _WidgetSchema =
+				[
+					{ Column: 'IDWidget',       Type: 'AutoIdentity' },
+					{ Column: 'GUIDWidget',     Type: 'AutoGUID' },
+					{ Column: 'CreateDate',     Type: 'CreateDate' },
+					{ Column: 'CreatingIDUser', Type: 'CreateIDUser' },
+					{ Column: 'UpdateDate',     Type: 'UpdateDate' },
+					{ Column: 'UpdatingIDUser', Type: 'UpdateIDUser' },
+					{ Column: 'Deleted',        Type: 'Deleted' },
+					{ Column: 'DeleteDate',     Type: 'DeleteDate' },
+					{ Column: 'DeletingIDUser', Type: 'DeleteIDUser' },
+					{ Column: 'Label',          Type: 'String' }
+				];
+
+				var newWidgetMeadow = function ()
+				{
+					return require('../source/Meadow.js').new(libFable, 'Widget')
+						.setProvider('SQLite')
+						.setSchema(_WidgetSchema)
+						.setJsonSchema({ title: 'Widget', type: 'object', properties: {}, required: [] })
+						.setDefaultIdentifier('IDWidget');
+				};
+
+				var _RawQueryPath = __dirname + '/Meadow-Provider-SQLite-WidgetRawRead.sql';
+
+				suiteSetup(function (fDone)
+				{
+					var tmpDB = libFable.MeadowSQLiteProvider.db;
+					tmpDB.exec(
+						'CREATE TABLE IF NOT EXISTS Widget (' +
+						'  IDWidget INTEGER PRIMARY KEY AUTOINCREMENT,' +
+						'  GUIDWidget TEXT NOT NULL DEFAULT \'\',' +
+						'  CreateDate TEXT,' +
+						'  CreatingIDUser INTEGER NOT NULL DEFAULT 0,' +
+						'  UpdateDate TEXT,' +
+						'  UpdatingIDUser INTEGER NOT NULL DEFAULT 0,' +
+						'  Deleted INTEGER NOT NULL DEFAULT 0,' +
+						'  DeleteDate TEXT,' +
+						'  DeletingIDUser INTEGER NOT NULL DEFAULT 0,' +
+						'  Label TEXT NOT NULL DEFAULT \'\'' +
+						');'
+					);
+					tmpDB.exec("INSERT INTO Widget (Label) VALUES ('alpha'), ('beta'), ('gamma');");
+
+					// Raw query has no placeholders — projection-only SELECT.
+					libFS.writeFileSync(_RawQueryPath,
+						'SELECT IDWidget, Label AS LabelAlias FROM Widget WHERE IDWidget = 1');
+					return fDone();
+				});
+
+				suiteTeardown(function (fDone)
+				{
+					try { libFS.unlinkSync(_RawQueryPath); } catch (pError) { /* ignore */ }
+					return fDone();
+				});
+
+				test
+				(
+					'doRead with a meadow-generated filter still resolves a parameterless raw query',
+					function (fDone)
+					{
+						var testMeadow = newWidgetMeadow();
+
+						testMeadow.rawQueries.loadQuery('Read', _RawQueryPath, function (pLoaded)
+						{
+							Expect(pLoaded).to.equal(true);
+
+							// addFilter generates a `:IDWidget_w0` named parameter
+							// (and soft-delete tracking adds `:Deleted_w1`).
+							// Neither appears in the raw SQL above.  Without
+							// param-filtering in the provider, node:sqlite
+							// throws "Unknown named parameter 'IDWidget_w0'".
+							testMeadow.doRead(testMeadow.query.addFilter('IDWidget', 1),
+								function (pError, pQuery, pRecord)
+								{
+									Expect(pError, pError && pError.message ? pError.message : pError).to.not.exist;
+									Expect(pRecord, 'pRecord should be a marshalled object, not ' + pRecord).to.be.an('object');
+									Expect(pRecord.LabelAlias).to.equal('alpha');
+									fDone();
+								});
 						});
 					}
 				);

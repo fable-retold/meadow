@@ -968,26 +968,35 @@ suite
 								{Brand:'Puma', Style:'Lowtop', Size:15, SKU:'dsa33234'}
 							];
 
-						var testMeadow = require('../source/Meadow.js')
-										.new(libFable, 'Master')
-										.setProvider('ALASQL')
-										.provider.constructFromObject(
-											{
-												Meadow: require('../source/Meadow.js').new(libFable, 'Master'),
-												Scope: 'ShoeCity',
-												ObjectPrototype: myData[0],
-												Data: myData
-											});
+						// constructFromObject's Import path drives doCreate per record,
+						// which is no longer synchronous (Meadow-Create defers its
+						// pre-flight callback via setImmediate to keep bulk-create
+						// chains stack-safe on sync providers).  Pass a callback so
+						// records are queryable before the subsequent doReads runs.
+						require('../source/Meadow.js')
+							.new(libFable, 'Master')
+							.setProvider('ALASQL')
+							.provider.constructFromObject(
+								{
+									Meadow: require('../source/Meadow.js').new(libFable, 'Master'),
+									Scope: 'ShoeCity',
+									ObjectPrototype: myData[0],
+									Data: myData
+								},
+								function (pImportError, testMeadow)
+								{
+									Expect(pImportError, pImportError && pImportError.message).to.not.exist;
 
-						testMeadow.doReads(testMeadow.query.clone().addFilter('SKU', 'dsa33234'),
-							function(pError, pQuery, pRecords)
-							{
-								// We should have a record ....
-								Expect(pRecords[0].Style)
-									.to.equal('Lowtop');
-								fDone();
-							}
-						);
+									testMeadow.doReads(testMeadow.query.clone().addFilter('SKU', 'dsa33234'),
+										function(pError, pQuery, pRecords)
+										{
+											// We should have a record ....
+											Expect(pRecords[0].Style)
+												.to.equal('Lowtop');
+											fDone();
+										}
+									);
+								});
 					}
 				);
 			}

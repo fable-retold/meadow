@@ -4,6 +4,8 @@
 * @author <steven@velozo.com>
 */
 
+var libAsyncEachSeries = require('async/eachSeries');
+
 var MeadowProvider = function()
 {
 	function createNew(pFable)
@@ -436,7 +438,25 @@ var MeadowProvider = function()
 		 *      Data:            []     (optional array of records, one object each)
 		 * }
 		 */
-		var constructFromObject = (pParameters) =>
+		/**
+		 * Construct an ALASQL-backed meadow from a JS object array.
+		 *
+		 * Signatures:
+		 *   constructFromObject(pParameters)            — bindObject path only;
+		 *                                                  returns meadow synchronously
+		 *   constructFromObject(pParameters, fCallback) — Import path (doCreate
+		 *                                                  per record); meadow + records
+		 *                                                  delivered via fCallback
+		 *
+		 * The Import path drives `doCreate` per record, which is no longer
+		 * guaranteed to complete in the same tick (Meadow-Create's pre-flight
+		 * yields via setImmediate to keep bulk-create chains stack-safe on
+		 * synchronous providers).  Callers that need the imported records
+		 * queryable on return must pass a callback.  Without a callback the
+		 * Import path is rejected — synchronous fire-and-forget imports were
+		 * a latent footgun and are no longer supported.
+		 */
+		var constructFromObject = (pParameters, fCallback) =>
 		{
 			if ((typeof(pParameters) !== 'object') || (typeof(pParameters.Meadow) !== 'object'))
 				return false;
@@ -452,12 +472,12 @@ var MeadowProvider = function()
 				pParameters.Import = true;
 			if (!Array.isArray(pParameters.Data))
 				pParameters.Data = [];
-				
+
 			// Construct a meadow
 			var tmpMeadow = pParameters.Meadow
 				.new(_Fable, pParameters.Scope)
 				.setProvider('ALASQL');
-			
+
 			var tmpSchema = [];
 			var tmpDefaultIdentifier;
 
@@ -489,7 +509,7 @@ var MeadowProvider = function()
 					case "function":
 						// Do nothing with these types of properties
 						break;
-						
+
 					case "boolean":
 						tmpSchema.push({ Column: tmpProperty, Type:"Boolean" });
 						break;
@@ -499,7 +519,7 @@ var MeadowProvider = function()
 					case "string":
 						tmpSchema.push({ Column: tmpProperty, Type:"Text" });
 						break;
-					
+
 					default:
 						break;
 				}
@@ -516,23 +536,47 @@ var MeadowProvider = function()
 			// Now import the data
 			if(pParameters.Import)
 			{
-				for (var j = 0; j < pParameters.Data.length; j++)
+				if (typeof(fCallback) !== 'function')
 				{
-					tmpMeadow.doCreate(tmpMeadow.query.clone().addRecord(pParameters.Data[j]),
-							function(pError, pQuery, pQueryRead, pRecord)
-							{
-								// Maybe log the error?
-								_Fable.log.trace('Auto imported record', pRecord);
-							}
-						);
+					_Fable.log.error('Meadow-Provider-ALASQL: constructFromObject called with Import=true but no callback — doCreate is no longer synchronous, callers must await record import.');
+					return false;
 				}
+
+				libAsyncEachSeries(
+					pParameters.Data,
+					function (pRecord, fNext)
+					{
+						tmpMeadow.doCreate(tmpMeadow.query.clone().addRecord(pRecord),
+							function (pError, pQuery, pQueryRead, pCreated)
+							{
+								if (pError)
+								{
+									_Fable.log.warn('Meadow-Provider-ALASQL: auto-import doCreate failed', { Error: pError, Record: pRecord });
+								}
+								else
+								{
+									_Fable.log.trace('Auto imported record', pCreated);
+								}
+								// Errors are logged but not propagated — the historical
+								// fire-and-forget loop swallowed them, preserve that
+								// shape so partial imports still return a usable meadow.
+								return fNext();
+							});
+					},
+					function ()
+					{
+						return fCallback(null, tmpMeadow);
+					});
+				return tmpMeadow;
 			}
-			else
+
+			// Just assign the object
+			tmpMeadow.provider.bindObject(pParameters.Data);
+
+			if (typeof(fCallback) === 'function')
 			{
-				// Just assign the object
-				tmpMeadow.provider.bindObject(pParameters.Data);
+				fCallback(null, tmpMeadow);
 			}
-			
 			return tmpMeadow;
 		};
 

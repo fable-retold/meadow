@@ -45,9 +45,13 @@ var meadowBehaviorCreate = function(pMeadow, pQuery, fCallBack)
 					{
 						pMeadow.fable.log.warn('Error during the unique-constraint pre-flight',
 							{ Error: pPreflightError, Message: pPreflightError && pPreflightError.message });
-						return fStageComplete(pPreflightError, pQuery, false);
+						return setImmediate(fStageComplete, pPreflightError, pQuery, false);
 					}
-					return fStageComplete();
+					// Defer via setImmediate so synchronous providers (node:sqlite,
+					// previously better-sqlite3) cannot stack-accumulate frames
+					// across a long synchronous chain of Creates — every record's
+					// pre-flight returns to the event loop before the INSERT runs.
+					return setImmediate(fStageComplete);
 				});
 			},
 			// Step 1: Create the record in the data source
