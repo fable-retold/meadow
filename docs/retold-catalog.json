@@ -1,216 +1,305 @@
 {
-	"Generated": "2026-05-21T17:20:48.523Z",
+	"Generated": "2026-05-22T05:38:59.448Z",
+	"Mode": "module",
 	"GitHubOrg": "stevenvelozo",
 	"DefaultBranch": "master",
-	"Groups": [
-		{
-			"Name": ".config",
-			"Key": ".config",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "code-server",
-					"Repo": "code-server",
-					"Group": ".config",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "configstore",
-					"Repo": "configstore",
-					"Group": ".config",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "luxury-extras",
-					"Repo": "luxury-extras",
-					"Group": ".config",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "vscode-sqltools",
-					"Repo": "vscode-sqltools",
-					"Group": ".config",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		},
-		{
-			"Name": "Dist",
-			"Key": "dist",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "FableTest-RocksDB",
-					"Repo": "FableTest-RocksDB",
-					"Group": "dist",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "indoctrinate_content_staging",
-					"Repo": "indoctrinate_content_staging",
-					"Group": "dist",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		},
-		{
-			"Name": "Docs",
-			"Key": "docs",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "api",
-					"Repo": "api",
-					"Group": "docs",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": [
-						"api/doCount.md",
-						"api/doCreate.md",
-						"api/doDelete.md",
-						"api/doRead.md",
-						"api/doReads.md",
-						"api/doUndelete.md",
-						"api/doUpdate.md",
-						"api/getRoleName.md",
-						"api/loadFromPackage.md",
-						"api/marshalRecordFromSourceToObject.md",
-						"api/query.md",
-						"api/rawQueries.md",
-						"api/reference.md",
-						"api/setAuthorizer.md",
-						"api/setDefault.md",
-						"api/setDefaultIdentifier.md",
-						"api/setDomain.md",
-						"api/setIDUser.md",
-						"api/setJsonSchema.md",
-						"api/setProvider.md",
-						"api/setSchema.md",
-						"api/setScope.md",
-						"api/validateObject.md"
-					]
-				},
-				{
-					"Name": "providers",
-					"Repo": "providers",
-					"Group": "docs",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": [
-						"providers/README.md",
-						"providers/alasql.md",
-						"providers/meadow-endpoints.md",
-						"providers/mongodb.md",
-						"providers/mssql.md",
-						"providers/mysql.md",
-						"providers/postgresql.md",
-						"providers/rocksdb.md",
-						"providers/sqlite.md"
-					]
-				},
-				{
-					"Name": "query",
-					"Repo": "query",
-					"Group": "docs",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": [
-						"query/README.md",
-						"query/count.md",
-						"query/create.md",
-						"query/delete.md",
-						"query/read.md",
-						"query/update.md"
-					]
-				},
-				{
-					"Name": "schema",
-					"Repo": "schema",
-					"Group": "docs",
-					"Branch": "master",
-					"HasDocs": true,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": [
-						"schema/README.md",
-						"schema/json-columns.md"
-					]
-				}
-			]
-		},
-		{
-			"Name": "Source",
-			"Key": "source",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "behaviors",
-					"Repo": "behaviors",
-					"Group": "source",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				},
-				{
-					"Name": "providers",
-					"Repo": "providers",
-					"Group": "source",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		},
-		{
-			"Name": "Test",
-			"Key": "test",
-			"Description": "",
-			"Modules": [
-				{
-					"Name": "schemas",
-					"Repo": "schemas",
-					"Group": "test",
-					"Branch": "master",
-					"HasDocs": false,
-					"HasCover": false,
-					"Sidebar": [],
-					"DocFiles": []
-				}
-			]
-		}
-	]
+	"Module": {
+		"Name": "meadow",
+		"Repo": "meadow",
+		"Group": "",
+		"Branch": "master",
+		"HasDocs": true,
+		"HasCover": true,
+		"Sidebar": [
+			{
+				"Title": "Getting Started",
+				"Children": [
+					{
+						"Title": "Introduction",
+						"Path": "README.md"
+					},
+					{
+						"Title": "Quick Start",
+						"Path": "quick-start.md"
+					},
+					{
+						"Title": "Architecture",
+						"Path": "architecture.md"
+					},
+					{
+						"Title": "Configuration",
+						"Path": "configuration.md"
+					}
+				]
+			},
+			{
+				"Title": "Core Concepts",
+				"Children": [
+					{
+						"Title": "Schema",
+						"Path": "schema/README.md"
+					},
+					{
+						"Title": "JSON Columns",
+						"Path": "schema/json-columns.md"
+					},
+					{
+						"Title": "Query DSL",
+						"Path": "query-dsl.md"
+					},
+					{
+						"Title": "Raw Queries",
+						"Path": "raw-queries.md"
+					},
+					{
+						"Title": "Audit Tracking",
+						"Path": "audit-tracking.md"
+					},
+					{
+						"Title": "Soft Deletes",
+						"Path": "soft-deletes.md"
+					}
+				]
+			},
+			{
+				"Title": "CRUD Operations",
+				"Children": [
+					{
+						"Title": "Overview",
+						"Path": "query/README.md"
+					},
+					{
+						"Title": "Create",
+						"Path": "query/create.md"
+					},
+					{
+						"Title": "Read",
+						"Path": "query/read.md"
+					},
+					{
+						"Title": "Update",
+						"Path": "query/update.md"
+					},
+					{
+						"Title": "Delete",
+						"Path": "query/delete.md"
+					},
+					{
+						"Title": "Count",
+						"Path": "query/count.md"
+					}
+				]
+			},
+			{
+				"Title": "Providers",
+				"Children": [
+					{
+						"Title": "Overview",
+						"Path": "providers/README.md"
+					},
+					{
+						"Title": "MySQL",
+						"Path": "providers/mysql.md"
+					},
+					{
+						"Title": "MSSQL",
+						"Path": "providers/mssql.md"
+					},
+					{
+						"Title": "PostgreSQL",
+						"Path": "providers/postgresql.md"
+					},
+					{
+						"Title": "SQLite",
+						"Path": "providers/sqlite.md"
+					},
+					{
+						"Title": "MongoDB",
+						"Path": "providers/mongodb.md"
+					},
+					{
+						"Title": "RocksDB",
+						"Path": "providers/rocksdb.md"
+					},
+					{
+						"Title": "ALASQL",
+						"Path": "providers/alasql.md"
+					},
+					{
+						"Title": "MeadowEndpoints",
+						"Path": "providers/meadow-endpoints.md"
+					}
+				]
+			},
+			{
+				"Title": "API Reference",
+				"Children": [
+					{
+						"Title": "Overview",
+						"Path": "api/reference.md"
+					},
+					{
+						"Title": "CRUD Methods",
+						"Children": []
+					},
+					{
+						"Title": "doCreate()",
+						"Path": "api/doCreate.md"
+					},
+					{
+						"Title": "doRead()",
+						"Path": "api/doRead.md"
+					},
+					{
+						"Title": "doReads()",
+						"Path": "api/doReads.md"
+					},
+					{
+						"Title": "doUpdate()",
+						"Path": "api/doUpdate.md"
+					},
+					{
+						"Title": "doDelete()",
+						"Path": "api/doDelete.md"
+					},
+					{
+						"Title": "doUndelete()",
+						"Path": "api/doUndelete.md"
+					},
+					{
+						"Title": "doCount()",
+						"Path": "api/doCount.md"
+					},
+					{
+						"Title": "Configuration",
+						"Children": []
+					},
+					{
+						"Title": "setProvider()",
+						"Path": "api/setProvider.md"
+					},
+					{
+						"Title": "setScope()",
+						"Path": "api/setScope.md"
+					},
+					{
+						"Title": "setSchema()",
+						"Path": "api/setSchema.md"
+					},
+					{
+						"Title": "setDefaultIdentifier()",
+						"Path": "api/setDefaultIdentifier.md"
+					},
+					{
+						"Title": "setIDUser()",
+						"Path": "api/setIDUser.md"
+					},
+					{
+						"Title": "setJsonSchema()",
+						"Path": "api/setJsonSchema.md"
+					},
+					{
+						"Title": "setDefault()",
+						"Path": "api/setDefault.md"
+					},
+					{
+						"Title": "setAuthorizer()",
+						"Path": "api/setAuthorizer.md"
+					},
+					{
+						"Title": "setDomain()",
+						"Path": "api/setDomain.md"
+					},
+					{
+						"Title": "loadFromPackage()",
+						"Path": "api/loadFromPackage.md"
+					},
+					{
+						"Title": "Utility",
+						"Children": []
+					},
+					{
+						"Title": "query (property)",
+						"Path": "api/query.md"
+					},
+					{
+						"Title": "rawQueries",
+						"Path": "api/rawQueries.md"
+					},
+					{
+						"Title": "validateObject()",
+						"Path": "api/validateObject.md"
+					},
+					{
+						"Title": "marshalRecordFromSourceToObject()",
+						"Path": "api/marshalRecordFromSourceToObject.md"
+					},
+					{
+						"Title": "getRoleName()",
+						"Path": "api/getRoleName.md"
+					}
+				]
+			}
+		],
+		"DocFiles": [
+			".nojekyll",
+			"README.md",
+			"_brand.json",
+			"_cover.md",
+			"_sidebar.md",
+			"_topbar.md",
+			"_version.json",
+			"api/doCount.md",
+			"api/doCreate.md",
+			"api/doDelete.md",
+			"api/doRead.md",
+			"api/doReads.md",
+			"api/doUndelete.md",
+			"api/doUpdate.md",
+			"api/getRoleName.md",
+			"api/loadFromPackage.md",
+			"api/marshalRecordFromSourceToObject.md",
+			"api/query.md",
+			"api/rawQueries.md",
+			"api/reference.md",
+			"api/setAuthorizer.md",
+			"api/setDefault.md",
+			"api/setDefaultIdentifier.md",
+			"api/setDomain.md",
+			"api/setIDUser.md",
+			"api/setJsonSchema.md",
+			"api/setProvider.md",
+			"api/setSchema.md",
+			"api/setScope.md",
+			"api/validateObject.md",
+			"architecture.md",
+			"audit-tracking.md",
+			"configuration.md",
+			"index.html",
+			"providers/README.md",
+			"providers/alasql.md",
+			"providers/meadow-endpoints.md",
+			"providers/mongodb.md",
+			"providers/mssql.md",
+			"providers/mysql.md",
+			"providers/postgresql.md",
+			"providers/rocksdb.md",
+			"providers/sqlite.md",
+			"query/README.md",
+			"query/count.md",
+			"query/create.md",
+			"query/delete.md",
+			"query/read.md",
+			"query/update.md",
+			"query-dsl.md",
+			"quick-start.md",
+			"raw-queries.md",
+			"retold-catalog.json",
+			"retold-keyword-index.json",
+			"schema/README.md",
+			"schema/json-columns.md",
+			"soft-deletes.md"
+		]
+	},
+	"Groups": []
 }
