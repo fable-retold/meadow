@@ -265,7 +265,7 @@ All operations are wrapped in try-catch blocks. Errors are stored in `pQuery.par
 
 ## Related Documentation
 
-- [Providers Overview](providers/README.md) -- Comparison of all providers
-- [MySQL Provider](providers/mysql.md) -- Production MySQL alternative
-- [SQLite Provider](providers/sqlite.md) -- Lightweight embedded alternative
+- [Providers Overview](README.md) -- Comparison of all providers
+- [MySQL Provider](mysql.md) -- Production MySQL alternative
+- [SQLite Provider](sqlite.md) -- Lightweight embedded alternative
 - [Schema](schema/README.md) -- Schema definitions that drive table creation

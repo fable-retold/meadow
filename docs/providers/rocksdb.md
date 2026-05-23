@@ -291,7 +291,7 @@ All operations follow the same error handling pattern:
 
 ## Related Documentation
 
-- [Providers Overview](providers/README.md) -- Comparison of all providers
-- [SQLite Provider](providers/sqlite.md) -- Embedded SQL alternative
-- [ALASQL Provider](providers/alasql.md) -- In-memory SQL alternative
+- [Providers Overview](README.md) -- Comparison of all providers
+- [SQLite Provider](sqlite.md) -- Embedded SQL alternative
+- [ALASQL Provider](alasql.md) -- In-memory SQL alternative
 - [meadow-connection-rocksdb](https://github.com/stevenvelozo/meadow-connection-rocksdb) -- Connection module source

@@ -303,7 +303,7 @@ HTTP-related errors follow the standard pattern:
 
 ## Related Documentation
 
-- [Providers Overview](providers/README.md) -- Comparison of all providers
-- [MySQL Provider](providers/mysql.md) -- Server-side database provider
-- [ALASQL Provider](providers/alasql.md) -- Client-side in-memory alternative
+- [Providers Overview](README.md) -- Comparison of all providers
+- [MySQL Provider](mysql.md) -- Server-side database provider
+- [ALASQL Provider](alasql.md) -- Client-side in-memory alternative
 - [meadow-endpoints](https://github.com/stevenvelozo/meadow-endpoints) -- Server-side REST API generation

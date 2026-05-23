@@ -313,7 +313,7 @@ docker run -d \
 
 ## Related Documentation
 
-- [Providers Overview](providers/README.md) -- Comparison of all providers
-- [MySQL Provider](providers/mysql.md) -- Relational database alternative
-- [ALASQL Provider](providers/alasql.md) -- In-memory alternative
+- [Providers Overview](README.md) -- Comparison of all providers
+- [MySQL Provider](mysql.md) -- Relational database alternative
+- [ALASQL Provider](alasql.md) -- In-memory alternative
 - [meadow-connection-mongodb](https://github.com/stevenvelozo/meadow-connection-mongodb) -- Connection module source

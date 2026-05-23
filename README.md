@@ -1,5 +1,7 @@
 # Meadow
 
+> **[&#9654; Read the Meadow Documentation](https://stevenvelozo.github.io/meadow/)** &mdash; interactive docs with the full API reference.
+
 A data access library providing magic where you want it, programmability where you don't.
 
 [![npm version](https://badge.fury.io/js/meadow.svg)](https://badge.fury.io/js/meadow)

@@ -291,6 +291,6 @@ docker run -d \
 
 ## Related Documentation
 
-- [Providers Overview](providers/README.md) -- Comparison of all providers
-- [MySQL Provider](providers/mysql.md) -- MySQL/MariaDB alternative
+- [Providers Overview](README.md) -- Comparison of all providers
+- [MySQL Provider](mysql.md) -- MySQL/MariaDB alternative
 - [meadow-connection-mssql](https://github.com/stevenvelozo/meadow-connection-mssql) -- Connection module source

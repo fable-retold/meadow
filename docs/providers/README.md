@@ -32,10 +32,10 @@ Every provider implements the same operation set:
 
 | Provider | Best For | Connection Module |
 |----------|----------|-------------------|
-| [MySQL](providers/mysql.md) | Production web applications, MySQL/MariaDB | [meadow-connection-mysql](https://github.com/stevenvelozo/meadow-connection-mysql) |
-| [MSSQL](providers/mssql.md) | Enterprise environments, SQL Server | [meadow-connection-mssql](https://github.com/stevenvelozo/meadow-connection-mssql) |
-| [SQLite](providers/sqlite.md) | Embedded applications, local development | [meadow-connection-sqlite](https://github.com/stevenvelozo/meadow-connection-sqlite) |
-| [ALASQL](providers/alasql.md) | Browser applications, unit testing, prototyping | Built-in (no external connection) |
+| [MySQL](mysql.md) | Production web applications, MySQL/MariaDB | [meadow-connection-mysql](https://github.com/stevenvelozo/meadow-connection-mysql) |
+| [MSSQL](mssql.md) | Enterprise environments, SQL Server | [meadow-connection-mssql](https://github.com/stevenvelozo/meadow-connection-mssql) |
+| [SQLite](sqlite.md) | Embedded applications, local development | [meadow-connection-sqlite](https://github.com/stevenvelozo/meadow-connection-sqlite) |
+| [ALASQL](alasql.md) | Browser applications, unit testing, prototyping | Built-in (no external connection) |
 | MeadowEndpoints | Client-side proxy to remote Meadow APIs | Built-in (HTTP via simple-get) |
 | None | Unit testing stubs, development scaffolding | None required |
 
@@ -241,10 +241,10 @@ meadow.doRead(meadow.query.addFilter('IDBook', 1),
 
 ## Provider-Specific Documentation
 
-- [MySQL](providers/mysql.md) -- Connection pooling, named placeholders, configuration
-- [MSSQL](providers/mssql.md) -- Prepared statements, type mapping, identity handling
-- [SQLite](providers/sqlite.md) -- Embedded database, lightweight deployment
-- [ALASQL](providers/alasql.md) -- In-memory SQL, dynamic table creation, browser support
+- [MySQL](mysql.md) -- Connection pooling, named placeholders, configuration
+- [MSSQL](mssql.md) -- Prepared statements, type mapping, identity handling
+- [SQLite](sqlite.md) -- Embedded database, lightweight deployment
+- [ALASQL](alasql.md) -- In-memory SQL, dynamic table creation, browser support
 
 ## Related Documentation
 
