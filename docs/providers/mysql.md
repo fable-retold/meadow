@@ -257,4 +257,4 @@ docker run -d \
 
 - [Providers Overview](README.md) -- Comparison of all providers
 - [MSSQL Provider](mssql.md) -- Microsoft SQL Server alternative
-- [meadow-connection-mysql](https://github.com/stevenvelozo/meadow-connection-mysql) -- Connection module source
+- [meadow-connection-mysql](https://github.com/fable-retold/meadow-connection-mysql) -- Connection module source

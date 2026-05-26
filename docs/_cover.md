@@ -11,4 +11,4 @@
 
 [Get Started](quick-start.md)
 [API Reference](api/reference.md)
-[GitHub](https://github.com/stevenvelozo/meadow)
+[GitHub](https://github.com/fable-retold/meadow)

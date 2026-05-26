@@ -32,9 +32,9 @@ Every provider implements the same operation set:
 
 | Provider | Best For | Connection Module |
 |----------|----------|-------------------|
-| [MySQL](mysql.md) | Production web applications, MySQL/MariaDB | [meadow-connection-mysql](https://github.com/stevenvelozo/meadow-connection-mysql) |
-| [MSSQL](mssql.md) | Enterprise environments, SQL Server | [meadow-connection-mssql](https://github.com/stevenvelozo/meadow-connection-mssql) |
-| [SQLite](sqlite.md) | Embedded applications, local development | [meadow-connection-sqlite](https://github.com/stevenvelozo/meadow-connection-sqlite) |
+| [MySQL](mysql.md) | Production web applications, MySQL/MariaDB | [meadow-connection-mysql](https://github.com/fable-retold/meadow-connection-mysql) |
+| [MSSQL](mssql.md) | Enterprise environments, SQL Server | [meadow-connection-mssql](https://github.com/fable-retold/meadow-connection-mssql) |
+| [SQLite](sqlite.md) | Embedded applications, local development | [meadow-connection-sqlite](https://github.com/fable-retold/meadow-connection-sqlite) |
 | [ALASQL](alasql.md) | Browser applications, unit testing, prototyping | Built-in (no external connection) |
 | MeadowEndpoints | Client-side proxy to remote Meadow APIs | Built-in (HTTP via simple-get) |
 | None | Unit testing stubs, development scaffolding | None required |
@@ -250,4 +250,4 @@ meadow.doRead(meadow.query.addFilter('IDBook', 1),
 
 - [Schema](schema/README.md) -- How schema definitions drive provider behavior
 - [Query Overview](query/README.md) -- FoxHound query DSL and dialect generation
-- [Meadow-Endpoints](https://github.com/stevenvelozo/meadow-endpoints) -- REST API generation on top of Meadow providers
+- [Meadow-Endpoints](https://github.com/fable-retold/meadow-endpoints) -- REST API generation on top of Meadow providers

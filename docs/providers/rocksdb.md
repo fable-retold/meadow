@@ -294,4 +294,4 @@ All operations follow the same error handling pattern:
 - [Providers Overview](README.md) -- Comparison of all providers
 - [SQLite Provider](sqlite.md) -- Embedded SQL alternative
 - [ALASQL Provider](alasql.md) -- In-memory SQL alternative
-- [meadow-connection-rocksdb](https://github.com/stevenvelozo/meadow-connection-rocksdb) -- Connection module source
+- [meadow-connection-rocksdb](https://github.com/fable-retold/meadow-connection-rocksdb) -- Connection module source

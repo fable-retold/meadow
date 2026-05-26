@@ -1,6 +1,6 @@
 # Query DSL
 
-Meadow uses [FoxHound](https://github.com/stevenvelozo/foxhound) as its query DSL. FoxHound provides a fluent, chainable API for building database queries without writing raw SQL. Meadow wraps FoxHound and manages query lifecycle, cloning, and schema injection.
+Meadow uses [FoxHound](https://github.com/fable-retold/foxhound) as its query DSL. FoxHound provides a fluent, chainable API for building database queries without writing raw SQL. Meadow wraps FoxHound and manages query lifecycle, cloning, and schema injection.
 
 ## Getting a Query
 

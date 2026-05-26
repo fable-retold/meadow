@@ -2,7 +2,7 @@
 
 > Building and configuring queries with the FoxHound DSL
 
-Every data operation in Meadow begins with a query object. Meadow uses [FoxHound](https://github.com/stevenvelozo/foxhound) as its query DSL, generating dialect-specific SQL from a fluent, chainable API. You never need to construct FoxHound directly -- Meadow gives you a fresh, pre-configured query every time you access the `.query` property.
+Every data operation in Meadow begins with a query object. Meadow uses [FoxHound](https://github.com/fable-retold/foxhound) as its query DSL, generating dialect-specific SQL from a fluent, chainable API. You never need to construct FoxHound directly -- Meadow gives you a fresh, pre-configured query every time you access the `.query` property.
 
 ## Getting a Query Object
 

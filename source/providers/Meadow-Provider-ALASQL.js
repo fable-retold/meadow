@@ -45,7 +45,7 @@ var MeadowProvider = function()
 		};
 		
 		// Create a table for this schema on the fly
-		// This is ripped off from https://github.com/stevenvelozo/stricture/blob/master/source/Stricture-Generate-MySQL.js
+		// This is ripped off from https://github.com/fable-retold/stricture/blob/master/source/Stricture-Generate-MySQL.js
 		var createTableDynamically = () =>
 		{
 			var tmpCreateStatement = '';

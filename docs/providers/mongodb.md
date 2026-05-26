@@ -2,7 +2,7 @@
 
 > Document-based storage with automatic counter management and sentinel value support
 
-The MongoDB provider connects Meadow to MongoDB databases via the [meadow-connection-mongodb](https://github.com/stevenvelozo/meadow-connection-mongodb) module. It uses the FoxHound MongoDB dialect for query generation, providing document-based storage without schema migration. Auto-increment counters, GUID generation, and timestamp sentinels are handled automatically.
+The MongoDB provider connects Meadow to MongoDB databases via the [meadow-connection-mongodb](https://github.com/fable-retold/meadow-connection-mongodb) module. It uses the FoxHound MongoDB dialect for query generation, providing document-based storage without schema migration. Auto-increment counters, GUID generation, and timestamp sentinels are handled automatically.
 
 ## Setup
 
@@ -316,4 +316,4 @@ docker run -d \
 - [Providers Overview](README.md) -- Comparison of all providers
 - [MySQL Provider](mysql.md) -- Relational database alternative
 - [ALASQL Provider](alasql.md) -- In-memory alternative
-- [meadow-connection-mongodb](https://github.com/stevenvelozo/meadow-connection-mongodb) -- Connection module source
+- [meadow-connection-mongodb](https://github.com/fable-retold/meadow-connection-mongodb) -- Connection module source

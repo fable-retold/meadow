@@ -1,6 +1,6 @@
 # Meadow
 
-> **[&#9654; Read the Meadow Documentation](https://stevenvelozo.github.io/meadow/)** &mdash; interactive docs with the full API reference.
+> **[&#9654; Read the Meadow Documentation](https://fable-retold.github.io/meadow/)** &mdash; interactive docs with the full API reference.
 
 A data access library providing magic where you want it, programmability where you don't.
 
@@ -146,12 +146,12 @@ meadow.doReads(meadow.query.setCap(25).setBegin(0),
 
 | Provider | Description | Connection Module |
 |----------|-------------|-------------------|
-| `MySQL` | MySQL/MariaDB via mysql2 | [meadow-connection-mysql](https://github.com/stevenvelozo/meadow-connection-mysql) |
-| `MSSQL` | Microsoft SQL Server | [meadow-connection-mssql](https://github.com/stevenvelozo/meadow-connection-mssql) |
-| `PostgreSQL` | PostgreSQL | [meadow-connection-postgresql](https://github.com/stevenvelozo/meadow-connection-postgresql) |
-| `SQLite` | Embedded SQLite via better-sqlite3 | [meadow-connection-sqlite](https://github.com/stevenvelozo/meadow-connection-sqlite) |
-| `MongoDB` | MongoDB document store | [meadow-connection-mongodb](https://github.com/stevenvelozo/meadow-connection-mongodb) |
-| `RocksDB` | Embedded key-value store | [meadow-connection-rocksdb](https://github.com/stevenvelozo/meadow-connection-rocksdb) |
+| `MySQL` | MySQL/MariaDB via mysql2 | [meadow-connection-mysql](https://github.com/fable-retold/meadow-connection-mysql) |
+| `MSSQL` | Microsoft SQL Server | [meadow-connection-mssql](https://github.com/fable-retold/meadow-connection-mssql) |
+| `PostgreSQL` | PostgreSQL | [meadow-connection-postgresql](https://github.com/fable-retold/meadow-connection-postgresql) |
+| `SQLite` | Embedded SQLite via better-sqlite3 | [meadow-connection-sqlite](https://github.com/fable-retold/meadow-connection-sqlite) |
+| `MongoDB` | MongoDB document store | [meadow-connection-mongodb](https://github.com/fable-retold/meadow-connection-mongodb) |
+| `RocksDB` | Embedded key-value store | [meadow-connection-rocksdb](https://github.com/fable-retold/meadow-connection-rocksdb) |
 | `ALASQL` | In-browser IndexedDB via ALASQL | Built-in |
 | `MeadowEndpoints` | REST proxy to remote Meadow API | Built-in |
 | `None` | No-op stub for testing | None required |
@@ -172,17 +172,17 @@ npx docsify-cli serve docs
 
 ## Related Packages
 
-- [foxhound](https://github.com/stevenvelozo/foxhound) -- query DSL for SQL and NoSQL generation
-- [stricture](https://github.com/stevenvelozo/stricture) -- schema definition language
-- [meadow-endpoints](https://github.com/stevenvelozo/meadow-endpoints) -- automatic REST endpoint generation
-- [meadow-connection-mysql](https://github.com/stevenvelozo/meadow-connection-mysql) -- MySQL connection provider
-- [meadow-connection-mssql](https://github.com/stevenvelozo/meadow-connection-mssql) -- MSSQL connection provider
-- [meadow-connection-sqlite](https://github.com/stevenvelozo/meadow-connection-sqlite) -- SQLite connection provider
-- [meadow-connection-postgresql](https://github.com/stevenvelozo/meadow-connection-postgresql) -- PostgreSQL connection provider
-- [meadow-connection-mongodb](https://github.com/stevenvelozo/meadow-connection-mongodb) -- MongoDB connection provider
-- [meadow-connection-rocksdb](https://github.com/stevenvelozo/meadow-connection-rocksdb) -- RocksDB connection provider
-- [fable](https://github.com/stevenvelozo/fable) -- application services framework
-- [orator](https://github.com/stevenvelozo/orator) -- API server abstraction
+- [foxhound](https://github.com/fable-retold/foxhound) -- query DSL for SQL and NoSQL generation
+- [stricture](https://github.com/fable-retold/stricture) -- schema definition language
+- [meadow-endpoints](https://github.com/fable-retold/meadow-endpoints) -- automatic REST endpoint generation
+- [meadow-connection-mysql](https://github.com/fable-retold/meadow-connection-mysql) -- MySQL connection provider
+- [meadow-connection-mssql](https://github.com/fable-retold/meadow-connection-mssql) -- MSSQL connection provider
+- [meadow-connection-sqlite](https://github.com/fable-retold/meadow-connection-sqlite) -- SQLite connection provider
+- [meadow-connection-postgresql](https://github.com/fable-retold/meadow-connection-postgresql) -- PostgreSQL connection provider
+- [meadow-connection-mongodb](https://github.com/fable-retold/meadow-connection-mongodb) -- MongoDB connection provider
+- [meadow-connection-rocksdb](https://github.com/fable-retold/meadow-connection-rocksdb) -- RocksDB connection provider
+- [fable](https://github.com/fable-retold/fable) -- application services framework
+- [orator](https://github.com/fable-retold/orator) -- API server abstraction
 
 ## License
 

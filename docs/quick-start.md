@@ -4,7 +4,7 @@ This guide walks you through installing Meadow, connecting to a database, and pe
 
 ## Installation
 
-Meadow requires [Fable](https://github.com/stevenvelozo/fable) as its runtime container and a connection module for your chosen database. Install all three:
+Meadow requires [Fable](https://github.com/fable-retold/fable) as its runtime container and a connection module for your chosen database. Install all three:
 
 ```bash
 npm install meadow fable meadow-connection-mysql
