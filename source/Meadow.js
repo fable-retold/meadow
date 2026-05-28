@@ -138,6 +138,7 @@ var Meadow = function()
 			'MSSQL': require(`./providers/Meadow-Provider-MSSQL.js`),
 			'SQLite': require(`./providers/Meadow-Provider-SQLite.js`),
 			'PostgreSQL': require(`./providers/Meadow-Provider-PostgreSQL.js`),
+			'Oracle': require(`./providers/Meadow-Provider-Oracle.js`),
 			'MongoDB': require(`./providers/Meadow-Provider-MongoDB.js`),
 			'DGraph': require(`./providers/Meadow-Provider-DGraph.js`),
 			'Solr': require(`./providers/Meadow-Provider-Solr.js`),
