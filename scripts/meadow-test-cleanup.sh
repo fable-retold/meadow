@@ -14,6 +14,7 @@ echo ""
 "${SCRIPT_DIR}/mysql-test-db.sh" stop
 "${SCRIPT_DIR}/mssql-test-db.sh" stop
 "${SCRIPT_DIR}/postgresql-test-db.sh" stop
+"${SCRIPT_DIR}/oracle-test-db.sh" stop
 "${SCRIPT_DIR}/mongodb-test-db.sh" stop
 "${SCRIPT_DIR}/solr-test-db.sh" stop
 "${SCRIPT_DIR}/dgraph-test-db.sh" stop
