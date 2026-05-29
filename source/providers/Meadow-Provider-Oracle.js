@@ -305,7 +305,11 @@ var MeadowProvider = function ()
 			executeStatement(pQuery.query.body, tmpBinds, function (pError, pDBResult)
 			{
 				tmpResult.error = pError;
-				tmpResult.value = pDBResult ? pDBResult.rowsAffected : 0;
+				// The Meadow Update behavior requires result.value to be an
+				// object; oracledb's UPDATE result has no rows array (no
+				// RETURNING), so mirror the PostgreSQL provider and expose an
+				// (empty) array. The post-update Read supplies the record.
+				tmpResult.value = (pDBResult && pDBResult.rows) ? pDBResult.rows : [];
 				tmpResult.executed = true;
 				return fCallback();
 			});
