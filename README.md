@@ -5,7 +5,6 @@
 A data access library providing magic where you want it, programmability where you don't.
 
 [![npm version](https://badge.fury.io/js/meadow.svg)](https://badge.fury.io/js/meadow)
-[![Build Status](https://travis-ci.org/stevenvelozo/meadow.svg?branch=main)](https://travis-ci.org/stevenvelozo/meadow)
 
 Meadow is a JavaScript data broker that handles repetitive CRUD operations through a consistent, provider-agnostic interface. It abstracts database communication behind a unified API -- whether your data lives in MySQL, MSSQL, PostgreSQL, SQLite, MongoDB, RocksDB, or an in-browser ALASQL store, Meadow provides schema management, query generation, data marshalling, and automatic audit stamping while you focus on business logic.
 
