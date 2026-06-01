@@ -1,6 +1,6 @@
 # Meadow
 
-> **[&#9654; Read the Meadow Documentation](https://fable-retold.github.io/meadow/)** &mdash; interactive docs with the full API reference.
+> **[Read the Meadow Documentation](https://fable-retold.github.io/meadow/)** - interactive docs with the full API reference.
 
 A data access library providing magic where you want it, programmability where you don't.
 
