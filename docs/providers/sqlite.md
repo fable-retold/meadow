@@ -170,4 +170,4 @@ The SQLite provider follows the same error handling pattern as MySQL:
 - [Providers Overview](README.md) -- Comparison of all providers
 - [MySQL Provider](mysql.md) -- MySQL/MariaDB for production
 - [ALASQL Provider](alasql.md) -- In-memory alternative
-- [meadow-connection-sqlite](https://github.com/fable-retold/meadow-connection-sqlite) -- Connection module source
+- [meadow-connection-sqlite](https://fable-retold.github.io/meadow-connection-sqlite/) -- Connection module source

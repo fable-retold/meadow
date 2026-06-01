@@ -2,7 +2,7 @@
 
 > Production-ready PostgreSQL integration with connection pooling and named parameter binding
 
-The PostgreSQL provider connects Meadow to PostgreSQL databases via the [meadow-connection-postgresql](https://github.com/fable-retold/meadow-connection-postgresql) module. It uses the FoxHound PostgreSQL dialect for query generation and supports named parameter binding with positional placeholders ($1, $2, etc.).
+The PostgreSQL provider connects Meadow to PostgreSQL databases via the [meadow-connection-postgresql](https://fable-retold.github.io/meadow-connection-postgresql/) module. It uses the FoxHound PostgreSQL dialect for query generation and supports named parameter binding with positional placeholders ($1, $2, etc.).
 
 ## Setup
 
@@ -309,4 +309,4 @@ docker run -d \
 - [Providers Overview](README.md) -- Comparison of all providers
 - [MySQL Provider](mysql.md) -- MySQL/MariaDB alternative
 - [MSSQL Provider](mssql.md) -- Microsoft SQL Server alternative
-- [meadow-connection-postgresql](https://github.com/fable-retold/meadow-connection-postgresql) -- Connection module source
+- [meadow-connection-postgresql](https://fable-retold.github.io/meadow-connection-postgresql/) -- Connection module source

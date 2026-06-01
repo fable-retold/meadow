@@ -293,4 +293,4 @@ docker run -d \
 
 - [Providers Overview](README.md) -- Comparison of all providers
 - [MySQL Provider](mysql.md) -- MySQL/MariaDB alternative
-- [meadow-connection-mssql](https://github.com/fable-retold/meadow-connection-mssql) -- Connection module source
+- [meadow-connection-mssql](https://fable-retold.github.io/meadow-connection-mssql/) -- Connection module source
