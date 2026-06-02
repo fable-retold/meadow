@@ -219,20 +219,8 @@ GET http://127.0.0.1:8086/1.0/Books/Count
 
 The primary use case for MeadowEndpoints is enabling client-side JavaScript to use the same Meadow data access interface that the server uses. This means your application logic can be written once and run in either context:
 
-```mermaid
-graph LR
-    subgraph Browser["Browser / Client"]
-        AC1["Application Code"]
-        ME["Meadow DAL<br/>Provider: MeadowEndpoints"]
-        AC1 --- ME
-    end
-    subgraph Server["Server"]
-        AC2["Application Code"]
-        MY["Meadow DAL<br/>Provider: MySQL"]
-        AC2 --- MY
-    end
-    ME -- "HTTP / REST" --> MY
-```
+<!-- bespoke diagram: edit diagrams/use-case-unified-client-server-interface.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/providers -->
+![Use Case: Unified Client-Server Interface](diagrams/use-case-unified-client-server-interface.svg)
 
 - **Server side:** Meadow uses a database provider (MySQL, MSSQL, PostgreSQL, etc.) to interact with the database directly
 - **Client side:** Meadow uses MeadowEndpoints to proxy the same operations over HTTP to the server's REST API

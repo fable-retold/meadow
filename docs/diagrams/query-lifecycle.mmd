@@ -1,0 +1,21 @@
+sequenceDiagram
+	participant App as Application
+	participant Meadow as Meadow
+	participant Behavior as Behavior Module
+	participant FH as FoxHound
+	participant Provider as Provider
+	participant DB as Database
+
+	App->>Meadow: meadow.query (clone FoxHound)
+	Meadow-->>App: Independent query clone
+	App->>App: addFilter / addRecord / setCap
+	App->>Meadow: meadow.doCreate / doRead / etc.
+	Meadow->>Behavior: Invoke behavior (async waterfall)
+	Behavior->>FH: setDialect / buildQuery
+	FH-->>Behavior: Generated SQL + parameters
+	Behavior->>Provider: Provider.Create / Read / etc.
+	Provider->>DB: Execute query
+	DB-->>Provider: Result rows
+	Provider-->>Behavior: Result on query object
+	Behavior->>Behavior: Marshal records (source to POJO)
+	Behavior-->>App: Callback (pError, pQuery, pRecord)

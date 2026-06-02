@@ -6,69 +6,22 @@ This document describes the internal architecture of Meadow, its component relat
 
 Meadow sits between your application and the database, orchestrating schema management, query generation, behavior execution, and data marshalling.
 
-```mermaid
-graph TB
-	Fable["Fable<br/>(Configuration, Logging, DI)"]
-	Meadow["Meadow<br/>(Data Broker)"]
-	Schema["Schema<br/>(Column Types, JSON Schema,<br/>Default Object, Authorizer)"]
-	FoxHound["FoxHound<br/>(Query DSL)"]
-	Behaviors["Behaviors<br/>(Create, Read, Reads,<br/>Update, Delete, Undelete, Count)"]
-	Provider["Provider<br/>(Database Adapter)"]
-	Database["Database<br/>(MySQL, MSSQL, PostgreSQL,<br/>SQLite, MongoDB, RocksDB, etc.)"]
-
-	Fable --> Meadow
-	Meadow --> Schema
-	Meadow --> FoxHound
-	Meadow --> Behaviors
-	Meadow --> Provider
-	Provider --> Database
-```
+<!-- bespoke diagram: edit diagrams/module-hierarchy.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs -->
+![Module Hierarchy](diagrams/module-hierarchy.svg)
 
 ## CRUD Behavior Flow
 
 Every CRUD operation follows the same general flow: a query object enters a behavior module, which orchestrates provider calls, marshals results, and returns data through the callback.
 
-```mermaid
-flowchart TD
-	A["Application calls<br/>meadow.doCreate / doRead / doReads /<br/>doUpdate / doDelete / doUndelete / doCount"]
-	B["Behavior Module<br/>(async waterfall)"]
-	C["Provider.Create / Read /<br/>Update / Delete / Undelete / Count"]
-	D["Database Result"]
-	E["Marshal Record<br/>(marshalRecordFromSourceToObject)"]
-	F["Callback<br/>(pError, pQuery, pRecord)"]
-
-	A --> B
-	B --> C
-	C --> D
-	D --> E
-	E --> F
-```
+<!-- bespoke diagram: edit diagrams/crud-behavior-flow.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs -->
+![CRUD Behavior Flow](diagrams/crud-behavior-flow.svg)
 
 ## Create Waterfall
 
 The create behavior is the most involved operation, performing multiple steps in an async waterfall to ensure GUID uniqueness and return the complete created record.
 
-```mermaid
-flowchart TD
-	A["Step 0: GUID Uniqueness Check<br/>If GUID is provided and >= 5 chars,<br/>query for existing record with same GUID"]
-	B{"GUID<br/>already exists?"}
-	C["Error: Record with GUID already exists"]
-	D["Step 1: Insert Record<br/>Merge default object with submitted record,<br/>set IDUser, call Provider.Create"]
-	E{"Insert<br/>succeeded?"}
-	F["Error: Creation failed"]
-	G["Step 2: Read Back<br/>Query by new auto-increment ID,<br/>call Provider.Read"]
-	H["Step 3: Marshal<br/>marshalRecordFromSourceToObject<br/>returns plain JavaScript object"]
-	I["Callback with<br/>created record"]
-
-	A --> B
-	B -->|Yes| C
-	B -->|No| D
-	D --> E
-	E -->|No| F
-	E -->|Yes| G
-	G --> H
-	H --> I
-```
+<!-- bespoke diagram: edit diagrams/create-waterfall.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs -->
+![Create Waterfall](diagrams/create-waterfall.svg)
 
 ## Provider Architecture
 
@@ -182,57 +135,15 @@ classDiagram
 
 The schema drives query generation, validation, record initialization, and access control. A single schema definition feeds multiple subsystems.
 
-```mermaid
-graph LR
-	Schema["Meadow Schema"]
-	ColumnSchema["Column Schema<br/>(Column, Type, Size)"]
-	JsonSchema["JSON Schema<br/>(Validation Rules)"]
-	DefaultObject["Default Object<br/>(Initial Values)"]
-	Authorizer["Authorizer<br/>(Role Permissions)"]
-
-	QueryGen["Query Generation<br/>(FoxHound builds SQL<br/>from column definitions)"]
-	Validation["Validation<br/>(is-my-json-valid<br/>checks objects)"]
-	RecordInit["Record Initialization<br/>(merge defaults into<br/>new records)"]
-	AccessControl["Access Control<br/>(role-based CRUD<br/>permissions)"]
-
-	Schema --> ColumnSchema
-	Schema --> JsonSchema
-	Schema --> DefaultObject
-	Schema --> Authorizer
-
-	ColumnSchema --> QueryGen
-	JsonSchema --> Validation
-	DefaultObject --> RecordInit
-	Authorizer --> AccessControl
-```
+<!-- bespoke diagram: edit diagrams/schema-system.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs -->
+![Schema System](diagrams/schema-system.svg)
 
 ## Query Lifecycle
 
 This diagram shows the full sequence of a CRUD operation from the application through to the database and back.
 
-```mermaid
-sequenceDiagram
-	participant App as Application
-	participant Meadow as Meadow
-	participant Behavior as Behavior Module
-	participant FH as FoxHound
-	participant Provider as Provider
-	participant DB as Database
-
-	App->>Meadow: meadow.query (clone FoxHound)
-	Meadow-->>App: Independent query clone
-	App->>App: addFilter / addRecord / setCap
-	App->>Meadow: meadow.doCreate / doRead / etc.
-	Meadow->>Behavior: Invoke behavior (async waterfall)
-	Behavior->>FH: setDialect / buildQuery
-	FH-->>Behavior: Generated SQL + parameters
-	Behavior->>Provider: Provider.Create / Read / etc.
-	Provider->>DB: Execute query
-	DB-->>Provider: Result rows
-	Provider-->>Behavior: Result on query object
-	Behavior->>Behavior: Marshal records (source to POJO)
-	Behavior-->>App: Callback (pError, pQuery, pRecord)
-```
+<!-- bespoke diagram: edit diagrams/query-lifecycle.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs -->
+![Query Lifecycle](diagrams/query-lifecycle.svg)
 
 ## Key Architectural Concepts
 

@@ -1,0 +1,13 @@
+flowchart TD
+	A["Application calls<br/>meadow.doCreate / doRead / doReads /<br/>doUpdate / doDelete / doUndelete / doCount"]
+	B["Behavior Module<br/>(async waterfall)"]
+	C["Provider.Create / Read /<br/>Update / Delete / Undelete / Count"]
+	D["Database Result"]
+	E["Marshal Record<br/>(marshalRecordFromSourceToObject)"]
+	F["Callback<br/>(pError, pQuery, pRecord)"]
+
+	A --> B
+	B --> C
+	C --> D
+	D --> E
+	E --> F

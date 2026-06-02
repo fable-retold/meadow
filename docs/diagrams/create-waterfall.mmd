@@ -1,0 +1,19 @@
+flowchart TD
+	A["Step 0: GUID Uniqueness Check<br/>If GUID is provided and >= 5 chars,<br/>query for existing record with same GUID"]
+	B{"GUID<br/>already exists?"}
+	C["Error: Record with GUID already exists"]
+	D["Step 1: Insert Record<br/>Merge default object with submitted record,<br/>set IDUser, call Provider.Create"]
+	E{"Insert<br/>succeeded?"}
+	F["Error: Creation failed"]
+	G["Step 2: Read Back<br/>Query by new auto-increment ID,<br/>call Provider.Read"]
+	H["Step 3: Marshal<br/>marshalRecordFromSourceToObject<br/>returns plain JavaScript object"]
+	I["Callback with<br/>created record"]
+
+	A --> B
+	B -->|Yes| C
+	B -->|No| D
+	D --> E
+	E -->|No| F
+	E -->|Yes| G
+	G --> H
+	H --> I

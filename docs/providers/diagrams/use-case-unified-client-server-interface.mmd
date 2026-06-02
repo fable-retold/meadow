@@ -1,0 +1,12 @@
+graph LR
+    subgraph Browser["Browser / Client"]
+        AC1["Application Code"]
+        ME["Meadow DAL<br/>Provider: MeadowEndpoints"]
+        AC1 --- ME
+    end
+    subgraph Server["Server"]
+        AC2["Application Code"]
+        MY["Meadow DAL<br/>Provider: MySQL"]
+        AC2 --- MY
+    end
+    ME -- "HTTP / REST" --> MY

@@ -1,0 +1,15 @@
+graph TB
+	Fable["Fable<br/>(Configuration, Logging, DI)"]
+	Meadow["Meadow<br/>(Data Broker)"]
+	Schema["Schema<br/>(Column Types, JSON Schema,<br/>Default Object, Authorizer)"]
+	FoxHound["FoxHound<br/>(Query DSL)"]
+	Behaviors["Behaviors<br/>(Create, Read, Reads,<br/>Update, Delete, Undelete, Count)"]
+	Provider["Provider<br/>(Database Adapter)"]
+	Database["Database<br/>(MySQL, MSSQL, PostgreSQL,<br/>SQLite, MongoDB, RocksDB, etc.)"]
+
+	Fable --> Meadow
+	Meadow --> Schema
+	Meadow --> FoxHound
+	Meadow --> Behaviors
+	Meadow --> Provider
+	Provider --> Database

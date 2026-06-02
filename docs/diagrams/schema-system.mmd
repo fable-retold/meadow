@@ -1,0 +1,21 @@
+graph LR
+	Schema["Meadow Schema"]
+	ColumnSchema["Column Schema<br/>(Column, Type, Size)"]
+	JsonSchema["JSON Schema<br/>(Validation Rules)"]
+	DefaultObject["Default Object<br/>(Initial Values)"]
+	Authorizer["Authorizer<br/>(Role Permissions)"]
+
+	QueryGen["Query Generation<br/>(FoxHound builds SQL<br/>from column definitions)"]
+	Validation["Validation<br/>(is-my-json-valid<br/>checks objects)"]
+	RecordInit["Record Initialization<br/>(merge defaults into<br/>new records)"]
+	AccessControl["Access Control<br/>(role-based CRUD<br/>permissions)"]
+
+	Schema --> ColumnSchema
+	Schema --> JsonSchema
+	Schema --> DefaultObject
+	Schema --> Authorizer
+
+	ColumnSchema --> QueryGen
+	JsonSchema --> Validation
+	DefaultObject --> RecordInit
+	Authorizer --> AccessControl
