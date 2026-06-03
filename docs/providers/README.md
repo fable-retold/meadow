@@ -6,16 +6,8 @@ Meadow's provider system abstracts database communication behind a unified CRUD 
 
 ## Overview
 
-```
-Meadow (Data Access Layer)
-  └── Provider Interface
-        ├── MySQL       -> mysql2 connection pool, named placeholders
-        ├── MSSQL       -> mssql prepared statements, SCOPE_IDENTITY()
-        ├── SQLite      -> Lightweight embedded SQL
-        ├── ALASQL      -> In-memory JavaScript SQL engine (browser/Node)
-        ├── MeadowEndpoints -> HTTP proxy to remote Meadow REST API
-        └── None        -> No-op stub for testing
-```
+<!-- bespoke diagram: edit diagrams/overview.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/providers -->
+![Overview](diagrams/overview.svg)
 
 Every provider implements the same operation set:
 

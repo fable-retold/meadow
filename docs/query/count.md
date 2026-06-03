@@ -68,14 +68,8 @@ meadow.doCount(tmpQuery,
 
 ## How It Works
 
-```
-1. Build Count Query
-   └── Apply filters, set dialect, generate SELECT COUNT(*) SQL
-2. Execute via Provider
-   └── Run query against database, start performance timer
-3. Validate and Profile
-   └── Verify result is a number, log warning if query exceeded threshold
-```
+<!-- bespoke diagram: edit diagrams/how-it-works.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/query -->
+![How It Works](diagrams/how-it-works.svg)
 
 ## Soft Delete Filtering
 

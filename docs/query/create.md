@@ -50,18 +50,8 @@ meadow.doCreate(tmpQuery,
 
 The create operation follows a multi-step waterfall:
 
-```
-1. GUID Uniqueness Check (if GUID provided)
-   └── Queries DB to verify no existing record has this GUID
-2. Insert Record
-   └── Merges record with schema defaults, executes INSERT
-3. Validate Creation
-   └── Confirms the insert succeeded, extracts new ID
-4. Read Back Record
-   └── Fetches the complete record using the new ID
-5. Marshal to Object
-   └── Converts DB result to a plain JavaScript object
-```
+<!-- bespoke diagram: edit diagrams/how-it-works-2.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/query -->
+![How It Works](diagrams/how-it-works-2.svg)
 
 ## GUID Uniqueness
 

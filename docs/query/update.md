@@ -50,16 +50,8 @@ meadow.doUpdate(tmpQuery,
 
 The update operation follows a multi-step waterfall:
 
-```
-1. Validate and Prepare
-   └── Verify record has default identifier, set user ID, add filters
-2. Execute UPDATE
-   └── Run the UPDATE query via provider
-3. Read Back Record
-   └── Fetch the updated record using the same filter
-4. Marshal to Object
-   └── Convert DB result to a plain JavaScript object
-```
+<!-- bespoke diagram: edit diagrams/how-it-works-5.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/query -->
+![How It Works](diagrams/how-it-works-5.svg)
 
 ## Record Identification
 

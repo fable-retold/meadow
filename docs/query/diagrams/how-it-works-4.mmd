@@ -1,0 +1,8 @@
+1. Build Read Query
+   └── Apply filters, pagination, sorting, set dialect, generate SELECT SQL
+2. Execute via Provider
+   └── Run query against database, start performance timer
+3. Marshal Each Record
+   └── Convert each DB row to plain JavaScript object
+4. Performance Check
+   └── Log warning if query exceeded threshold (default 200ms)

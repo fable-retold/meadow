@@ -76,14 +76,8 @@ meadow.doRead(tmpQuery,
 
 ### How It Works
 
-```
-1. Build Read Query
-   └── Apply filters, set dialect, generate SELECT SQL
-2. Execute via Provider
-   └── Run query against database
-3. Marshal Record
-   └── Convert DB row to plain JavaScript object using schema defaults
-```
+<!-- bespoke diagram: edit diagrams/how-it-works-3.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/query -->
+![How It Works](diagrams/how-it-works-3.svg)
 
 The read operation returns only the first matching record. If no record matches, the callback receives `undefined` as the record parameter (not an error).
 
@@ -223,16 +217,8 @@ meadow.doReads(tmpQuery,
 
 ### How It Works
 
-```
-1. Build Read Query
-   └── Apply filters, pagination, sorting, set dialect, generate SELECT SQL
-2. Execute via Provider
-   └── Run query against database, start performance timer
-3. Marshal Each Record
-   └── Convert each DB row to plain JavaScript object
-4. Performance Check
-   └── Log warning if query exceeded threshold (default 200ms)
-```
+<!-- bespoke diagram: edit diagrams/how-it-works-4.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/query -->
+![How It Works](diagrams/how-it-works-4.svg)
 
 ---
 

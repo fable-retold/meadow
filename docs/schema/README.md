@@ -8,13 +8,8 @@ Meadow's schema system is the foundation of every data entity. It defines column
 
 A Meadow schema consists of four complementary parts:
 
-```
-Schema Definition
-  ├── Column Schema (array)     -> Defines columns, types, and sizes
-  ├── JSON Schema (object)      -> Validates objects against JSON Schema v4
-  ├── Default Object (object)   -> Template merged with new records on create
-  └── Authorizer (object)       -> Role-based access control per operation
-```
+<!-- bespoke diagram: edit diagrams/overview.mmd or .hints.json, then: npx pict-renderer-graph build modules/meadow/meadow/docs/schema -->
+![Overview](diagrams/overview.svg)
 
 Each part is optional and can be set independently, but together they provide a complete data model definition.
 
