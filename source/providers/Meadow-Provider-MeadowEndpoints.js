@@ -19,10 +19,10 @@ var MeadowProvider = function()
 
 		var _Dialect = 'MeadowEndpoints';
 
-		var _Headers = {};
-		var _Cookies = [];
-
-		var _EndpointSettings = (_Fable.settings.hasOwnProperty('MeadowEndpoints')) ? JSON.parse(JSON.stringify(_Fable.settings.MeadowEndpoints)) : (
+		// Static fallback configuration — used when no live connection instance
+		// is bound (standalone DAL usage). Settings are STATIC boot config:
+		// host/port/prefix only, never session state.
+		var _StaticEndpointSettings = (_Fable.settings.hasOwnProperty('MeadowEndpoints')) ? JSON.parse(JSON.stringify(_Fable.settings.MeadowEndpoints)) : (
 			{
 				ServerProtocol: 'http',
 				ServerAddress: '127.0.0.1',
@@ -31,9 +31,32 @@ var MeadowProvider = function()
 			}
 		)
 
+		// Instance-driven configuration (preferred) — the same convention the
+		// SQL providers use (e.g. _Fable.MeadowMySQLProvider): the DAL's fable
+		// carries the live connection instance, which OWNS both the connection
+		// parameters and the session state (headers/cookies). Reading it per
+		// request means post-connect authentication and later cookie rotation
+		// always apply to the requests this provider makes.
+		var getConnectionInstance = function()
+		{
+			return (typeof(_Fable.MeadowMeadowEndpointsProvider) === 'object' && _Fable.MeadowMeadowEndpointsProvider !== null)
+				? _Fable.MeadowMeadowEndpointsProvider : null;
+		};
+
+		var getEndpointSettings = function()
+		{
+			let tmpInstance = getConnectionInstance();
+			if (tmpInstance && typeof(tmpInstance.settings) === 'object' && tmpInstance.settings !== null)
+			{
+				return tmpInstance.settings;
+			}
+			return _StaticEndpointSettings;
+		};
+
 		var buildURL = function(pAddress)
 		{
-			return `${_EndpointSettings.ServerProtocol}://${_EndpointSettings.ServerAddress}:${_EndpointSettings.ServerPort}/${_EndpointSettings.ServerEndpointPrefix}${pAddress}`;
+			let tmpEndpointSettings = getEndpointSettings();
+			return `${tmpEndpointSettings.ServerProtocol}://${tmpEndpointSettings.ServerAddress}:${tmpEndpointSettings.ServerPort}/${tmpEndpointSettings.ServerEndpointPrefix}${pAddress}`;
 		};
 
 		var buildRequestOptions = function(pQuery)
@@ -46,13 +69,19 @@ var MeadowProvider = function()
 
 			let tmpURL = buildURL(pQuery.query.body);
 
+			let tmpInstance = getConnectionInstance();
+			let tmpHeaders = (tmpInstance && typeof(tmpInstance.headers) === 'object' && tmpInstance.headers !== null)
+				? tmpInstance.headers : {};
+			let tmpCookies = (tmpInstance && Array.isArray(tmpInstance.cookies))
+				? tmpInstance.cookies : [];
+
 			let tmpRequestOptions = (
 			{
 				url: tmpURL,
-				headers: _Fable.Utility.extend({cookie: ''}, _Headers)
+				headers: _Fable.Utility.extend({cookie: ''}, tmpHeaders)
 			});
 
-			tmpRequestOptions.headers.cookie = _Cookies.join(';');
+			tmpRequestOptions.headers.cookie = tmpCookies.join(';');
 
 
 			if (pQuery.logLevel > 0 ||
