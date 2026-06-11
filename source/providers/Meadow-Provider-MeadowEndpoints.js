@@ -56,7 +56,14 @@ var MeadowProvider = function()
 		var buildURL = function(pAddress)
 		{
 			let tmpEndpointSettings = getEndpointSettings();
-			return `${tmpEndpointSettings.ServerProtocol}://${tmpEndpointSettings.ServerAddress}:${tmpEndpointSettings.ServerPort}/${tmpEndpointSettings.ServerEndpointPrefix}${pAddress}`;
+			let tmpURL = `${tmpEndpointSettings.ServerProtocol}://${tmpEndpointSettings.ServerAddress}:${tmpEndpointSettings.ServerPort}/${tmpEndpointSettings.ServerEndpointPrefix}${pAddress}`;
+			// e.g. 'skipDecoration=true' — lets machine-to-machine connections
+			// opt out of per-row presentation decoration the remote applies.
+			if (typeof(tmpEndpointSettings.AdditionalQueryString) === 'string' && tmpEndpointSettings.AdditionalQueryString.length > 0)
+			{
+				tmpURL += (tmpURL.indexOf('?') >= 0) ? `&${tmpEndpointSettings.AdditionalQueryString}` : `?${tmpEndpointSettings.AdditionalQueryString}`;
+			}
+			return tmpURL;
 		};
 
 		var buildRequestOptions = function(pQuery)
@@ -75,10 +82,19 @@ var MeadowProvider = function()
 			let tmpCookies = (tmpInstance && Array.isArray(tmpInstance.cookies))
 				? tmpInstance.cookies : [];
 
+			// Explicit timeout: Node 20+ installs a ~5s socket timeout on
+			// http.globalAgent; an explicit request timeout takes that default
+			// out of play (same workaround as fable's RestClient). Configurable
+			// per connection (settings.RequestTimeout) for slow decorated reads.
+			let tmpEndpointSettings = getEndpointSettings();
+			let tmpRequestTimeout = (typeof(tmpEndpointSettings.RequestTimeout) === 'number')
+				? tmpEndpointSettings.RequestTimeout : 60000;
+
 			let tmpRequestOptions = (
 			{
 				url: tmpURL,
-				headers: _Fable.Utility.extend({cookie: ''}, tmpHeaders)
+				headers: _Fable.Utility.extend({cookie: ''}, tmpHeaders),
+				timeout: tmpRequestTimeout
 			});
 
 			tmpRequestOptions.headers.cookie = tmpCookies.join(';');
