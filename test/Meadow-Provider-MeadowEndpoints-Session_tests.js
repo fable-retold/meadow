@@ -121,3 +121,78 @@ suite('MeadowEndpoints provider instance-driven configuration', function ()
 		Expect(Array.isArray(tmpOutcome.Records)).to.equal(true);
 	});
 });
+
+suite('MeadowEndpoints provider request timeout', function ()
+{
+	suiteSetup(async function () { await startStubAPI(); });
+	suiteTeardown(function () { if (_Server) { _Server.close(); } });
+
+	test('an explicit request timeout is always set (Node 20+ globalAgent ~5s default workaround)', function (fDone)
+	{
+		// Intercept the socket-level options by reading from a slow-but-fine
+		// stub: the request must carry a timeout >= the configured value, so
+		// the platform default never applies.
+		const libHTTP = require('http');
+		const tmpOriginalRequest = libHTTP.request;
+		let tmpCapturedOptions = null;
+		libHTTP.request = function (pOptions, fResponseHandler)
+		{
+			tmpCapturedOptions = pOptions;
+			return tmpOriginalRequest.call(libHTTP, pOptions, fResponseHandler);
+		};
+		const tmpDAL = buildDAL(null, serverSettings());
+		readAnimals(tmpDAL).then((pOutcome) =>
+		{
+			libHTTP.request = tmpOriginalRequest;
+			Expect(tmpCapturedOptions).to.be.an('object');
+			Expect(tmpCapturedOptions.timeout).to.equal(60000, 'default 60s');
+			fDone();
+		}).catch((pError) => { libHTTP.request = tmpOriginalRequest; fDone(pError); });
+	});
+
+	test('the connection settings RequestTimeout overrides the default', function (fDone)
+	{
+		const libHTTP = require('http');
+		const tmpOriginalRequest = libHTTP.request;
+		let tmpCapturedOptions = null;
+		libHTTP.request = function (pOptions, fResponseHandler)
+		{
+			tmpCapturedOptions = pOptions;
+			return tmpOriginalRequest.call(libHTTP, pOptions, fResponseHandler);
+		};
+		const tmpSettings = Object.assign(serverSettings(), { RequestTimeout: 120000 });
+		const tmpDAL = buildDAL(null, tmpSettings);
+		readAnimals(tmpDAL).then(() =>
+		{
+			libHTTP.request = tmpOriginalRequest;
+			Expect(tmpCapturedOptions.timeout).to.equal(120000);
+			fDone();
+		}).catch((pError) => { libHTTP.request = tmpOriginalRequest; fDone(pError); });
+	});
+});
+
+suite('MeadowEndpoints provider additional query string', function ()
+{
+	suiteSetup(async function () { await startStubAPI(); });
+	suiteTeardown(function () { if (_Server) { _Server.close(); } });
+
+	test('AdditionalQueryString is appended to read URLs (e.g. skipDecoration=true)', function (fDone)
+	{
+		const libHTTP = require('http');
+		const tmpOriginalRequest = libHTTP.request;
+		let tmpCapturedPath = null;
+		libHTTP.request = function (pOptions, fResponseHandler)
+		{
+			tmpCapturedPath = pOptions.path;
+			return tmpOriginalRequest.call(libHTTP, pOptions, fResponseHandler);
+		};
+		const tmpSettings = Object.assign(serverSettings(), { AdditionalQueryString: 'skipDecoration=true' });
+		const tmpDAL = buildDAL(null, tmpSettings);
+		readAnimals(tmpDAL).then(() =>
+		{
+			libHTTP.request = tmpOriginalRequest;
+			Expect(tmpCapturedPath).to.contain('?skipDecoration=true');
+			fDone();
+		}).catch((pError) => { libHTTP.request = tmpOriginalRequest; fDone(pError); });
+	});
+});
