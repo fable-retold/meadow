@@ -122,6 +122,52 @@ suite('MeadowEndpoints provider instance-driven configuration', function ()
 	});
 });
 
+function readAnimalsWithSession(pDAL, pSessionOverride)
+{
+	return new Promise((fResolve) =>
+	{
+		let tmpQuery = pDAL.query.clone().setCap(1);
+		tmpQuery.query.parameters.MeadowEndpointsSessionOverride = pSessionOverride;
+		pDAL.doReads(tmpQuery, (pError, pQuery, pRecords) => fResolve({ Error: pError, Records: pRecords }));
+	});
+}
+
+suite('MeadowEndpoints provider per-request session override', function ()
+{
+	suiteSetup(async function () { await startStubAPI(); });
+	suiteTeardown(function () { if (_Server) { _Server.close(); } });
+	setup(function () { _LastRequest = null; });
+
+	test('a forwarded caller session is presented upstream INSTEAD of the bound machine session', async function ()
+	{
+		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
+		await readAnimalsWithSession(buildDAL(tmpInstance), { SessionID: 'caller-session-xyz' });
+		Expect(_LastRequest.Cookie).to.equal('UserSession=caller-session-xyz', 'the per-request caller session wins; the bound machine session is not sent');
+	});
+
+	test('the upstream cookie name follows the connection Authentication.CookieName', async function ()
+	{
+		const tmpSettings = Object.assign(serverSettings(), { Authentication: { CookieName: 'SessionID' } });
+		const tmpInstance = { settings: tmpSettings, headers: {}, cookies: [ 'SessionID=machine-bound' ] };
+		await readAnimalsWithSession(buildDAL(tmpInstance), { SessionID: 'caller-abc' });
+		Expect(_LastRequest.Cookie).to.equal('SessionID=caller-abc');
+	});
+
+	test('a default placeholder session (0x0000) falls back to the bound connection session', async function ()
+	{
+		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
+		await readAnimalsWithSession(buildDAL(tmpInstance), { SessionID: '0x0000' });
+		Expect(_LastRequest.Cookie).to.equal('UserSession=machine-bound', 'an anonymous/placeholder session is not a real identity — use the machine session');
+	});
+
+	test('no override present → bound connection session (backward compatible)', async function ()
+	{
+		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
+		await readAnimals(buildDAL(tmpInstance));
+		Expect(_LastRequest.Cookie).to.equal('UserSession=machine-bound');
+	});
+});
+
 suite('MeadowEndpoints provider request timeout', function ()
 {
 	suiteSetup(async function () { await startStubAPI(); });

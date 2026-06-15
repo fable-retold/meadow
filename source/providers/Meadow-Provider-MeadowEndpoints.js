@@ -97,7 +97,28 @@ var MeadowProvider = function()
 				timeout: tmpRequestTimeout
 			});
 
-			tmpRequestOptions.headers.cookie = tmpCookies.join(';');
+			// Per-request session override: when an operation carries a caller
+			// session (a forwarded identity — e.g. a databeacon proxying a
+			// user's request, or a cron run impersonating a RunAs user), present
+			// THAT session upstream instead of the connection's bound machine
+			// session, so the remote enforces row-level auth as the real caller.
+			// The override rides the per-operation query (concurrency-safe — it
+			// never touches the connection's shared cookie state). Absent or a
+			// default placeholder session falls back to the bound cookies.
+			let tmpSessionOverride = (pQuery && pQuery.query && pQuery.query.parameters)
+				? pQuery.query.parameters.MeadowEndpointsSessionOverride : null;
+			if (tmpSessionOverride && typeof(tmpSessionOverride.SessionID) === 'string'
+				&& tmpSessionOverride.SessionID.length > 0 && tmpSessionOverride.SessionID !== '0x0000')
+			{
+				let tmpCookieName = (tmpEndpointSettings.Authentication && tmpEndpointSettings.Authentication.CookieName)
+					? tmpEndpointSettings.Authentication.CookieName
+					: (tmpEndpointSettings.SessionCookieName || 'UserSession');
+				tmpRequestOptions.headers.cookie = `${tmpCookieName}=${tmpSessionOverride.SessionID}`;
+			}
+			else
+			{
+				tmpRequestOptions.headers.cookie = tmpCookies.join(';');
+			}
 
 
 			if (pQuery.logLevel > 0 ||
