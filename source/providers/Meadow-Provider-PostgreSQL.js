@@ -34,6 +34,11 @@ var MeadowProvider = function ()
 			// Track which named params we've already mapped to a positional index
 			var tmpParamMap = {};
 
+			// Postgres booleans are stored as SMALLINT (0/1) for cross-engine SQL consistency, so coerce a
+			// JS boolean value to 1/0 before binding (mirrors the SQLite provider). Without this, node-pg
+			// binds true/false and the SMALLINT column rejects it.
+			var coerceBoolean = function (pV) { return (typeof pV === 'boolean') ? (pV ? 1 : 0) : pV; };
+
 			// Match :paramName patterns (word characters after a colon)
 			// but not inside quoted strings and not ::type casts
 			var tmpText = pQueryBody.replace(/:([A-Za-z_][A-Za-z0-9_]*)/g, function (pMatch, pParamName)
@@ -64,14 +69,14 @@ var MeadowProvider = function ()
 						{
 							tmpParamIndex++;
 						}
-						tmpValues.push(tmpValue[i]);
+						tmpValues.push(coerceBoolean(tmpValue[i]));
 						tmpPlaceholders.push('$' + tmpParamIndex);
 					}
 					return tmpPlaceholders.join(', ');
 				}
 				else
 				{
-					tmpValues.push(tmpValue);
+					tmpValues.push(coerceBoolean(tmpValue));
 					return '$' + tmpParamIndex;
 				}
 			});
