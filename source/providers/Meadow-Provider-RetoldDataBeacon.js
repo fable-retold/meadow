@@ -1,4 +1,4 @@
-// ##### Part of the **[retold](https://stevenvelozo.github.io/retold/)** system
+// ##### Part of the **[retold](https://fable-retold.io/)** system
 /**
  * Meadow provider that relays CRUD operations to a remote retold-databeacon
  * agent through an Ultravisor mesh. Structurally parallel to the
