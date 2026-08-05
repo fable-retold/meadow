@@ -117,6 +117,20 @@ suite
 				);
 				test
 				(
+					'The query should carry the default identifier so dialects can order paged reads',
+					function()
+					{
+						var testMeadow = require('../source/Meadow.js').new(_Fable, 'Animal')
+							.setDefaultIdentifier('IDAnimalPrimaryKey');
+						Expect(testMeadow.query.query.defaultIdentifier)
+							.to.equal('IDAnimalPrimaryKey');
+						// Consumers routinely clone the query getter's result.
+						Expect(testMeadow.query.clone().query.defaultIdentifier)
+							.to.equal('IDAnimalPrimaryKey');
+					}
+				);
+				test
+				(
 					'Try out some role names',
 					function()
 					{

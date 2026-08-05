@@ -517,6 +517,10 @@ var Meadow = function()
 							var tmpQuery = _Query.clone();
 							// Set the default schema
 							tmpQuery.query.schema = _Schema.schema;
+							// Dialects use this to give a capped read a total order; it is
+							// correct even where the primary key isn't auto-increment (and
+							// therefore isn't typed AutoIdentity in the schema).
+							tmpQuery.query.defaultIdentifier = _DefaultIdentifier;
 							return tmpQuery;
 						},
 				enumerable: true

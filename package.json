@@ -1,6 +1,6 @@
 {
   "name": "meadow",
-  "version": "2.0.47",
+  "version": "2.0.48",
   "description": "A data access library.",
   "main": "source/Meadow.js",
   "scripts": {
@@ -85,22 +85,22 @@
   },
   "homepage": "https://github.com/fable-retold/meadow",
   "devDependencies": {
-    "alasql": "^4.17.0",
+    "alasql": "^4.17.3",
     "dgraph-js-http": "^21.3.0",
-    "fable": "^3.1.78",
+    "fable": "^3.1.80",
     "gulp-util": "^3.0.8",
     "meadow-connection-dgraph": "^1.0.3",
     "meadow-connection-mongodb": "^1.0.3",
-    "meadow-connection-mssql": "^1.0.23",
-    "meadow-connection-mysql": "^1.0.19",
+    "meadow-connection-mssql": "^1.0.24",
+    "meadow-connection-mysql": "^1.0.20",
     "meadow-connection-oracle": "^1.0.2",
-    "meadow-connection-postgresql": "^1.0.7",
-    "meadow-connection-rocksdb": "^1.0.0",
+    "meadow-connection-postgresql": "^1.0.9",
+    "meadow-connection-rocksdb": "^1.0.1",
     "meadow-connection-solr": "^1.0.3",
-    "meadow-connection-sqlite": "^1.0.20",
+    "meadow-connection-sqlite": "^1.0.21",
     "meadow-connection-sqlite-browser": "^1.0.2",
     "mongodb": "^6.12.0",
-    "mysql2": "^3.18.2",
+    "mysql2": "^3.23.2",
     "oracledb": "^6.10.0",
     "pict-docuserve": "^1.4.19",
     "puppeteer": "^24.38.0",
@@ -109,7 +109,7 @@
   },
   "dependencies": {
     "async": "3.2.6",
-    "foxhound": "^2.0.29",
+    "foxhound": "^2.0.30",
     "is-my-json-valid": "2.20.6",
     "simple-get": "^4.0.1"
   }
