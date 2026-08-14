@@ -47,6 +47,15 @@ function serverSettings()
 	return { ServerProtocol: 'http', ServerAddress: '127.0.0.1', ServerPort: String(_ServerPort), ServerEndpointPrefix: '1.0/' };
 }
 
+// Presenting the connection's own login when a request carries no caller
+// session is opt-in — a beacon services other people's requests, so acting as
+// itself has to be a deliberate deployment choice. Tests that exercise the
+// bound-cookie plumbing therefore have to turn it on.
+function serverSettingsWithBoundFallback()
+{
+	return Object.assign(serverSettings(), { AllowBoundSessionFallback: true });
+}
+
 function buildDAL(pBoundInstance, pStaticSettings)
 {
 	let tmpFable = new libFable(
@@ -81,14 +90,14 @@ suite('MeadowEndpoints provider instance-driven configuration', function ()
 
 	test('a bound instance supplies connection parameters AND session cookies', async function ()
 	{
-		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=from-the-connector' ] };
+		const tmpInstance = { settings: serverSettingsWithBoundFallback(), headers: {}, cookies: [ 'UserSession=from-the-connector' ] };
 		await readAnimals(buildDAL(tmpInstance));
 		Expect(_LastRequest.Cookie).to.equal('UserSession=from-the-connector');
 	});
 
 	test('cookies set on the instance AFTER DAL init apply (post-connect auth)', async function ()
 	{
-		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [] };
+		const tmpInstance = { settings: serverSettingsWithBoundFallback(), headers: {}, cookies: [] };
 		const tmpDAL = buildDAL(tmpInstance);
 		tmpInstance.cookies.push('UserSession=established-later');
 		await readAnimals(tmpDAL);
@@ -97,7 +106,7 @@ suite('MeadowEndpoints provider instance-driven configuration', function ()
 
 	test('cookie ROTATION on the instance is visible on the next request', async function ()
 	{
-		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=first' ] };
+		const tmpInstance = { settings: serverSettingsWithBoundFallback(), headers: {}, cookies: [ 'UserSession=first' ] };
 		const tmpDAL = buildDAL(tmpInstance);
 		await readAnimals(tmpDAL);
 		Expect(_LastRequest.Cookie).to.equal('UserSession=first');
@@ -153,16 +162,30 @@ suite('MeadowEndpoints provider per-request session override', function ()
 		Expect(_LastRequest.Cookie).to.equal('SessionID=caller-abc');
 	});
 
-	test('a default placeholder session (0x0000) falls back to the bound connection session', async function ()
+	test('a placeholder session (0x0000) is not an identity — with the opt-in, the bound session is used', async function ()
+	{
+		const tmpInstance = { settings: serverSettingsWithBoundFallback(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
+		await readAnimalsWithSession(buildDAL(tmpInstance), { SessionID: '0x0000' });
+		Expect(_LastRequest.Cookie).to.equal('UserSession=machine-bound');
+	});
+
+	test('a placeholder session (0x0000) without the opt-in sends NO session', async function ()
 	{
 		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
 		await readAnimalsWithSession(buildDAL(tmpInstance), { SessionID: '0x0000' });
-		Expect(_LastRequest.Cookie).to.equal('UserSession=machine-bound', 'an anonymous/placeholder session is not a real identity — use the machine session');
+		Expect(_LastRequest.Cookie).to.equal('', 'a placeholder is not a caller identity, and the connection\'s login is not a stand-in for one');
 	});
 
-	test('no override present → bound connection session (backward compatible)', async function ()
+	test('no override and no opt-in → NO session is presented upstream', async function ()
 	{
 		const tmpInstance = { settings: serverSettings(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
+		await readAnimals(buildDAL(tmpInstance));
+		Expect(_LastRequest.Cookie).to.equal('', 'the remote decides what an unauthenticated caller may see — the beacon does not answer as itself');
+	});
+
+	test('no override WITH the opt-in → the bound connection session', async function ()
+	{
+		const tmpInstance = { settings: serverSettingsWithBoundFallback(), headers: {}, cookies: [ 'UserSession=machine-bound' ] };
 		await readAnimals(buildDAL(tmpInstance));
 		Expect(_LastRequest.Cookie).to.equal('UserSession=machine-bound');
 	});

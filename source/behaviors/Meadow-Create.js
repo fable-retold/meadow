@@ -92,8 +92,8 @@ var meadowBehaviorCreate = function(pMeadow, pQuery, fCallBack)
 			// Step 3: Read the record
 			function (pQuery, pIDRecord, fStageComplete)
 			{
-				var tmpQueryRead = pQuery.clone().addFilter(pMeadow.defaultIdentifier, pIDRecord)
-												 .setDisableDeleteTracking(pQuery.parameters.query.disableDeleteTracking); //if delete tracking is disabled, we need to disable it on this Read operation
+				var tmpQueryRead = pMeadow.carryCallerContext(pQuery, pQuery.clone().addFilter(pMeadow.defaultIdentifier, pIDRecord)
+												 .setDisableDeleteTracking(pQuery.parameters.query.disableDeleteTracking)); //if delete tracking is disabled, we need to disable it on this Read operation
 
 				if (pMeadow.rawQueries.checkQuery('Read'))
 				{

@@ -141,6 +141,58 @@ var MeadowProvider = function()
 				return tmpRequestOptions;
 		};
 
+		/**
+		 * Decide whether a response from the remote is a failure.
+		 *
+		 * Two shapes have to be caught, because meadow-endpoints hosts emit
+		 * both. A non-2xx status is the easy one. The other is a 200 carrying
+		 * an error envelope — `{ Error, StatusCode? }` — which is what an
+		 * authorization refusal and a rejected write look like on a stock
+		 * meadow-endpoints deployment. Checking only the status code accepts
+		 * "you do not have rights to do that" as a successful result, so the
+		 * envelope check is the load-bearing half, not the belt-and-braces one.
+		 *
+		 * The identity-column guard keeps a legitimate record that happens to
+		 * carry an `Error` column from being mistaken for a failure: a real
+		 * record from a create / update / single read always carries its
+		 * identity, and an error envelope never does.
+		 *
+		 * @param {string} pOperation - operation name, used in the message
+		 * @param {object} pResponse - the simple-get response (for statusCode)
+		 * @param {*} pBody - the parsed response body
+		 * @param {string} [pIdentityColumn] - the scope's identity column, when known
+		 * @return {Error|null} an Error to fail the query with, or null when the response is good
+		 */
+		var detectResponseFailure = function(pOperation, pResponse, pBody, pIdentityColumn)
+		{
+			let tmpStatus = (pResponse && (typeof(pResponse.statusCode) === 'number')) ? pResponse.statusCode : 0;
+
+			let tmpEnvelopeMessage = null;
+			if (pBody && (typeof(pBody) === 'object') && !Array.isArray(pBody)
+				&& (typeof(pBody.Error) === 'string') && (pBody.Error.length > 0)
+				&& !(pIdentityColumn && Object.prototype.hasOwnProperty.call(pBody, pIdentityColumn)))
+			{
+				tmpEnvelopeMessage = pBody.Error;
+			}
+
+			if (tmpStatus >= 400)
+			{
+				let tmpStatusError = new Error(`Meadow-Endpoints ${pOperation} failed: HTTP ${tmpStatus}${tmpEnvelopeMessage ? ` — ${tmpEnvelopeMessage}` : ''}`);
+				tmpStatusError.StatusCode = tmpStatus;
+				return tmpStatusError;
+			}
+
+			if (tmpEnvelopeMessage)
+			{
+				let tmpEnvelopeError = new Error(`Meadow-Endpoints ${pOperation} failed: ${tmpEnvelopeMessage}`);
+				tmpEnvelopeError.StatusCode = (typeof(pBody.StatusCode) === 'number') ? pBody.StatusCode
+					: ((typeof(pBody.ErrorCode) === 'number') ? pBody.ErrorCode : tmpStatus);
+				return tmpEnvelopeError;
+			}
+
+			return null;
+		};
+
 		// The Meadow marshaller also passes in the Schema as the third parameter, but this is a blunt function ATM.
 		var marshalRecordFromSourceToObject = function(pObject, pRecord)
 		{
@@ -209,6 +261,14 @@ var MeadowProvider = function()
 
 							// TODO Because this was proxied, read happens at this layer too.  Inefficient -- fixable
 							const tmpIdentityColumn = `ID${pQuery.parameters.scope}`;
+
+							let tmpCreateFailure = detectResponseFailure('Create', pResponse, tmpResult.value, tmpIdentityColumn);
+							if (tmpCreateFailure)
+							{
+								tmpResult.error = tmpCreateFailure;
+								return fCallback();
+							}
+
 							if (tmpResult.value && tmpResult.value.hasOwnProperty(tmpIdentityColumn))
 							{
 								tmpResult.value = tmpResult.value[tmpIdentityColumn];
@@ -272,10 +332,28 @@ var MeadowProvider = function()
 								}
 							}
 
+							let tmpReadFailure = detectResponseFailure('Read', pResponse, tmpResult.value, `ID${pQuery.parameters.scope}`);
+							if (tmpReadFailure)
+							{
+								tmpResult.error = tmpReadFailure;
+								return fCallback();
+							}
+
 							if (pQuery.query.body.startsWith(`${pQuery.parameters.scope}/`))
 							{
 								// If this is not a plural read, make the result into an array.
 								tmpResult.value = [tmpResult.value];
+							}
+
+							// Past this point a read is a record set or it is nothing.
+							// Meadow marshals `value` with an each() that walks an
+							// object's VALUES, so a non-array here (a stray string,
+							// an unrecognized envelope) becomes one garbage record
+							// with a property per character rather than a failure.
+							if ((tmpResult.value !== undefined) && !Array.isArray(tmpResult.value))
+							{
+								tmpResult.error = new Error(`Meadow-Endpoints Read returned a ${typeof(tmpResult.value)} where a record set was expected.`);
+								return fCallback();
 							}
 
 							if (pQuery.logLevel > 0 ||
@@ -345,6 +423,13 @@ var MeadowProvider = function()
 								}
 							}
 
+							let tmpUpdateFailure = detectResponseFailure('Update', pResponse, tmpResult.value, `ID${pQuery.parameters.scope}`);
+							if (tmpUpdateFailure)
+							{
+								tmpResult.error = tmpUpdateFailure;
+								return fCallback();
+							}
+
 							// Keep result.value as the full response object so the
 							// Meadow Update waterfall's typeof check passes (it expects
 							// an object). The subsequent Read step uses the existing
@@ -407,6 +492,13 @@ var MeadowProvider = function()
 								}
 							}
 
+							let tmpDeleteFailure = detectResponseFailure('Delete', pResponse, tmpResult.value, `ID${pQuery.parameters.scope}`);
+							if (tmpDeleteFailure)
+							{
+								tmpResult.error = tmpDeleteFailure;
+								return fCallback();
+							}
+
 							if (tmpResult.value && tmpResult.value.hasOwnProperty('Count'))
 							{
 								tmpResult.value = tmpResult.value.Count;
@@ -466,6 +558,13 @@ var MeadowProvider = function()
 									tmpResult.error = new Error(`Failed to parse Count response as JSON: ${pParseError.message}`);
 									return fCallback();
 								}
+							}
+
+							let tmpCountFailure = detectResponseFailure('Count', pResponse, tmpResult.value, `ID${pQuery.parameters.scope}`);
+							if (tmpCountFailure)
+							{
+								tmpResult.error = tmpCountFailure;
+								return fCallback();
 							}
 
 							try

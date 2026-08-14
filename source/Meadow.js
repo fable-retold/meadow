@@ -335,6 +335,35 @@ var Meadow = function()
 		};
 
 		/**
+		 * Carry the caller context from one query onto a follow-up query.
+		 *
+		 * A behavior that writes a record then re-reads it issues a SECOND query,
+		 * and foxhound's clone() deliberately carries almost nothing forward — so
+		 * the follow-up loses the caller identity the first query was stamped
+		 * with. Against a SQL provider that is invisible. Against a provider that
+		 * fronts a remote API it is not: the re-read goes out anonymously, the
+		 * remote scopes it to nobody, and a write that genuinely succeeded comes
+		 * back as "Record not Found".
+		 *
+		 * @param {object} pFromQuery - the query carrying the caller context
+		 * @param {object} pToQuery - the follow-up query to stamp
+		 * @return {object} pToQuery, for chaining
+		 */
+		var carryCallerContext = function(pFromQuery, pToQuery)
+		{
+			if (!pFromQuery || !pToQuery || !pFromQuery.query || !pToQuery.query)
+			{
+				return pToQuery;
+			}
+			if (pFromQuery.query.parameters && pFromQuery.query.parameters.MeadowEndpointsSessionOverride)
+			{
+				pToQuery.query.parameters = pToQuery.query.parameters || {};
+				pToQuery.query.parameters.MeadowEndpointsSessionOverride = pFromQuery.query.parameters.MeadowEndpointsSessionOverride;
+			}
+			return pToQuery;
+		};
+
+		/**
 		 * Take the stored representation of our object and stuff the proper values
 		 * into our record, translating where necessary.
 		 */
@@ -391,6 +420,7 @@ var Meadow = function()
 
 			validateObject: _Schema.validateObject,
 			marshalRecordFromSourceToObject: marshalRecordFromSourceToObject,
+			carryCallerContext: carryCallerContext,
 
 			setProvider: setProvider,
 			setIDUser: setIDUser,
