@@ -103,8 +103,17 @@ var MeadowProvider = function()
 			// THAT session upstream instead of the connection's bound machine
 			// session, so the remote enforces row-level auth as the real caller.
 			// The override rides the per-operation query (concurrency-safe — it
-			// never touches the connection's shared cookie state). Absent or a
-			// default placeholder session falls back to the bound cookies.
+			// never touches the connection's shared cookie state).
+			//
+			// With no caller session, the connection's own login is NOT a
+			// stand-in for one — presenting it runs someone else's request under
+			// this connection's identity, which reads upstream as a legitimate
+			// user and silently widens what the caller can see and write. So the
+			// request goes out with no session at all and the remote decides:
+			// public data answers, protected data 401s. A deployment that
+			// genuinely means "act as this connection" (machine-to-machine
+			// movement, public reference data) opts in with
+			// AllowBoundSessionFallback.
 			let tmpSessionOverride = (pQuery && pQuery.query && pQuery.query.parameters)
 				? pQuery.query.parameters.MeadowEndpointsSessionOverride : null;
 			if (tmpSessionOverride && typeof(tmpSessionOverride.SessionID) === 'string'
@@ -115,9 +124,13 @@ var MeadowProvider = function()
 					: (tmpEndpointSettings.SessionCookieName || 'UserSession');
 				tmpRequestOptions.headers.cookie = `${tmpCookieName}=${tmpSessionOverride.SessionID}`;
 			}
-			else
+			else if (tmpEndpointSettings.AllowBoundSessionFallback)
 			{
 				tmpRequestOptions.headers.cookie = tmpCookies.join(';');
+			}
+			else
+			{
+				delete tmpRequestOptions.headers.cookie;
 			}
 
 
