@@ -6996,7 +6996,8 @@ pMeadow.provider.Update(pQuery,function(){fStageComplete(pQuery.result.error,pQu
 function(pQuery,fStageComplete){if(typeof pQuery.parameters.result.value!=='object'){// The value is not an object
 return fStageComplete('No record updated.',pQuery,false);}fStageComplete(pQuery.result.error,pQuery);},// Step 3: Read the record
 function(pQuery,fStageComplete){// We can clone the query, since it has the criteria for the update in it already (filters survive a clone)
-var tmpQueryRead=pMeadow.carryCallerContext(pQuery,pQuery.clone());// Make sure to load the record with the custom query if necessary.
+var tmpQueryRead=pMeadow.carryCallerContext(pQuery,pQuery.clone().setDisableDeleteTracking(pQuery.parameters.query.disableDeleteTracking));//if delete tracking is disabled, we need to disable it on this Read operation
+// Make sure to load the record with the custom query if necessary.
 if(pMeadow.rawQueries.checkQuery('Read')){tmpQueryRead.parameters.queryOverride=pMeadow.rawQueries.getQuery('Read');}pMeadow.provider.Read(tmpQueryRead,function(){fStageComplete(tmpQueryRead.result.error,pQuery,tmpQueryRead);});},// Step 4: Marshal the record into a POJO
 function(pQuery,pQueryRead,fStageComplete){if(pQueryRead.result.value.length===0){//No record found to update
 return fStageComplete('No record found to update!',pQueryRead.result,false);}var tmpRecord=pMeadow.marshalRecordFromSourceToObject(pQueryRead.result.value[0]);fStageComplete(pQuery.result.error,pQuery,pQueryRead,tmpRecord);}],function(pError,pQuery,pQueryRead,pRecord){if(pError){pMeadow.fable.log.warn('Error during Update waterfall',{Error:pError,Message:pError.message,Query:pQuery.query});}fCallBack(pError,pQuery,pQueryRead,pRecord);});return pMeadow;};module.exports=meadowBehaviorUpdate;},{"async/waterfall":32}],341:[function(require,module,exports){// ##### Part of the **[retold](https://fable-retold.io/)** system

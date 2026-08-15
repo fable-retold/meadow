@@ -91,7 +91,8 @@ var meadowBehaviorUpdate = function(pMeadow, pQuery, fCallBack)
 			function (pQuery, fStageComplete)
 			{
 				// We can clone the query, since it has the criteria for the update in it already (filters survive a clone)
-				var tmpQueryRead = pMeadow.carryCallerContext(pQuery, pQuery.clone());
+				var tmpQueryRead = pMeadow.carryCallerContext(pQuery, pQuery.clone()
+												 .setDisableDeleteTracking(pQuery.parameters.query.disableDeleteTracking)); //if delete tracking is disabled, we need to disable it on this Read operation
 				// Make sure to load the record with the custom query if necessary.
 				if (pMeadow.rawQueries.checkQuery('Read'))
 				{
