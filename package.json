@@ -1,6 +1,6 @@
 {
   "name": "meadow",
-  "version": "2.0.53",
+  "version": "2.0.54",
   "description": "A data access library.",
   "main": "source/Meadow.js",
   "scripts": {
@@ -87,20 +87,20 @@
   "devDependencies": {
     "alasql": "^4.17.3",
     "dgraph-js-http": "^21.3.0",
-    "fable": "^3.1.82",
+    "fable": "^3.1.85",
     "gulp-util": "^3.0.8",
     "meadow-connection-dgraph": "^1.0.3",
     "meadow-connection-mongodb": "^1.0.3",
-    "meadow-connection-mssql": "^1.0.24",
-    "meadow-connection-mysql": "^1.0.20",
+    "meadow-connection-mssql": "^1.0.27",
+    "meadow-connection-mysql": "^1.0.21",
     "meadow-connection-oracle": "^1.0.2",
-    "meadow-connection-postgresql": "^1.0.10",
+    "meadow-connection-postgresql": "^1.0.11",
     "meadow-connection-rocksdb": "^1.0.1",
     "meadow-connection-solr": "^1.0.3",
-    "meadow-connection-sqlite": "^1.0.21",
-    "meadow-connection-sqlite-browser": "^1.0.2",
+    "meadow-connection-sqlite": "^1.0.22",
+    "meadow-connection-sqlite-browser": "^1.0.3",
     "mongodb": "^6.12.0",
-    "mysql2": "^3.23.3",
+    "mysql2": "^3.24.5",
     "oracledb": "^6.10.0",
     "pict-docuserve": "^1.4.19",
     "puppeteer": "^24.38.0",
@@ -109,7 +109,7 @@
   },
   "dependencies": {
     "async": "3.2.6",
-    "foxhound": "^2.0.31",
+    "foxhound": "^2.0.33",
     "is-my-json-valid": "2.20.6",
     "simple-get": "^4.0.1"
   }

@@ -1907,6 +1907,19 @@ tmpSort=[pSort];}_Parameters.sort=tmpSort;if(_LogLevel>2){_Fable.log.info('Sort 
 		* @param {Object} pJoin The join criteria(s) for the Query.
 		* @return {Object} Returns the current Query for chaining.
 		*/var setJoin=function(pJoin){_Parameters.join=[];if(Array.isArray(pJoin)){pJoin.forEach(function(join){addJoin(join.Table,join.From,join.To,join.Type);});}else if(typeof pJoin==='object'){addJoin(pJoin.Table,pJoin.From,pJoin.To,pJoin.Type);}return this;};/**
+		* Add an alternative join/filter path to the same records.
+		*
+		* A record is included when it satisfies the base query AND any one branch. Each branch
+		* inherits the scope, data elements, filters and sort, and layers its own joins and filters
+		* on top; the dialect emits them as UNIONed derived tables with the sort and limit pushed
+		* into each, so every branch can be driven from its own index.
+		*
+		* With no branches added the emitted SQL is unchanged.
+		*
+		* @method addQueryBranch
+		* @param {Object} pBranch The branch, {join: [...], filter: [...]}; both optional.
+		* @return {Object} Returns the current Query for chaining.
+		*/var addQueryBranch=function(pBranch){if(typeof pBranch!=='object'||pBranch===null||Array.isArray(pBranch)){_Fable.log.warn('Tried to add an invalid query branch',{queryUUID:_UUID,parameters:_Parameters});return this;}var tmpBranch={join:Array.isArray(pBranch.join)?pBranch.join:[],filter:Array.isArray(pBranch.filter)?pBranch.filter:[]};if(tmpBranch.join.length<1&&tmpBranch.filter.length<1){_Fable.log.warn('Tried to add an empty query branch',{queryUUID:_UUID,parameters:_Parameters});return this;}if(!Array.isArray(_Parameters.queryBranches)){_Parameters.queryBranches=[tmpBranch];}else{_Parameters.queryBranches.push(tmpBranch);}if(_LogLevel>2){_Fable.log.info('Added a query branch',{queryUUID:_UUID,parameters:_Parameters});}return this;};/**
 		* Add a sort data element
 		*
 		* The passed values can be either a string, an object or an array of objects.
@@ -2027,7 +2040,7 @@ if(pFrom.indexOf(pTable)!=0){_Fable.log.warn('Tried to add an invalid query join
 		* @method checkDialect
 		*/var checkDialect=function(){if(_Dialect===false){setDialect('English');}};var buildCreateQuery=function(){checkDialect();_Parameters.query.body=_Dialect.Create(_Parameters);return this;};var buildReadQuery=function(){checkDialect();_Parameters.query.body=_Dialect.Read(_Parameters);return this;};var buildUpdateQuery=function(){checkDialect();_Parameters.query.body=_Dialect.Update(_Parameters);return this;};var buildDeleteQuery=function(){checkDialect();_Parameters.query.body=_Dialect.Delete(_Parameters);return this;};var buildUndeleteQuery=function(){checkDialect();_Parameters.query.body=_Dialect.Undelete(_Parameters);return this;};var buildCountQuery=function(){checkDialect();_Parameters.query.body=_Dialect.Count(_Parameters);return this;};/**
 		* Container Object for our Factory Pattern
-		*/var tmpNewFoxHoundObject={resetParameters:resetParameters,mergeParameters:mergeParameters,setLogLevel:setLogLevel,setScope:setScope,setDistinct:setDistinct,setIDUser:setIDUser,setDataElements:setDataElements,setBegin:setBegin,setCap:setCap,setFilter:setFilter,addFilter:addFilter,setSort:setSort,addSort:addSort,setJoin:setJoin,addJoin:addJoin,addRecord:addRecord,setDisableAutoIdentity:setDisableAutoIdentity,setDisableAutoDateStamp:setDisableAutoDateStamp,setDisableAutoUserStamp:setDisableAutoUserStamp,setDisableDeleteTracking:setDisableDeleteTracking,setDialect:setDialect,buildCreateQuery:buildCreateQuery,buildReadQuery:buildReadQuery,buildUpdateQuery:buildUpdateQuery,buildDeleteQuery:buildDeleteQuery,buildUndeleteQuery:buildUndeleteQuery,buildCountQuery:buildCountQuery,clone:clone,new:createNew};/**
+		*/var tmpNewFoxHoundObject={resetParameters:resetParameters,mergeParameters:mergeParameters,setLogLevel:setLogLevel,setScope:setScope,setDistinct:setDistinct,setIDUser:setIDUser,setDataElements:setDataElements,setBegin:setBegin,setCap:setCap,setFilter:setFilter,addFilter:addFilter,setSort:setSort,addSort:addSort,setJoin:setJoin,addJoin:addJoin,addQueryBranch:addQueryBranch,addRecord:addRecord,setDisableAutoIdentity:setDisableAutoIdentity,setDisableAutoDateStamp:setDisableAutoDateStamp,setDisableAutoUserStamp:setDisableAutoUserStamp,setDisableDeleteTracking:setDisableDeleteTracking,setDialect:setDialect,buildCreateQuery:buildCreateQuery,buildReadQuery:buildReadQuery,buildUpdateQuery:buildUpdateQuery,buildDeleteQuery:buildDeleteQuery,buildUndeleteQuery:buildUndeleteQuery,buildCountQuery:buildCountQuery,clone:clone,new:createNew};/**
 		 * Query
 		 *
 		 * @property query
@@ -2037,7 +2050,12 @@ if(pFrom.indexOf(pTable)!=0){_Fable.log.warn('Tried to add an invalid query join
 		 *
 		 * @property query
 		 * @type Object
-		 */Object.defineProperty(tmpNewFoxHoundObject,'indexHints',{get:function(){return _Parameters.indexHints;},set:function(pHints){_Parameters.indexHints=pHints;},enumerable:true});/**
+		 *//**
+		 * Query Branches
+		 *
+		 * @property queryBranches
+		 * @type Array
+		 */Object.defineProperty(tmpNewFoxHoundObject,'queryBranches',{get:function(){return _Parameters.queryBranches;},set:function(pBranches){_Parameters.queryBranches=pBranches;},enumerable:true});Object.defineProperty(tmpNewFoxHoundObject,'indexHints',{get:function(){return _Parameters.indexHints;},set:function(pHints){_Parameters.indexHints=pHints;},enumerable:true});/**
 		 * Result
 		 *
 		 * @property result
@@ -2130,7 +2148,23 @@ query:false,/*
 				records: false,  // The records to be created or changed
 				parameters: {}
 			}
-		*/indexHints:false,/*
+		*/queryBranches:false,/*
+			A set of alternative join/filter paths to the same records, UNIONed together.
+
+			[
+				{ join: [ {Type,Table,From,To}, ... ], filter: [ ...filter entries... ] },
+				{ join: [ ... ],                       filter: [ ... ] }
+			]
+
+			Each branch inherits the query's scope, data elements, filters and sort, and adds its own
+			joins and filters on top. The dialect emits one derived table per branch UNIONed together,
+			pushing the sort and an (begin+cap) limit into each branch so each can be satisfied from
+			its own index rather than scanning to satisfy the outer ORDER BY.
+
+			Used when a record is reachable for more than one independent reason and a single flat
+			query would have to express that as an OR, which prevents the optimizer from driving the
+			query off any one of them.
+		 */indexHints:false,/*
 			['IndexName1', 'IndexName2'] // A list of index names to hint to the underlying provider, if supported
 		 */// Who is making the query
 userID:0,// Where the query results are stuck
@@ -2699,10 +2733,33 @@ const SQL_NOW="GETUTCDATE()";let _Fable=pFable;/**
 	* @return: {String} Returns the table name clause
 	*/var generateTableName=function(pParameters){// Every Foxhound query has a table name; this puts it on here even if there are no columns
 // Which occurs when you generate a query like SELECT COUNT(*) FROM SomeTable;
-if(!pParameters.query.hasOwnProperty('parameterTypes')){pParameters.query.parameterTypes={};}return' ['+pParameters.scope+']';};var generateMSSQLParameterTypeEntry=function(pParameters,pColumnParameterName,pColumn){// Lazily create the parameterTypes object if it doesn't exist
+if(!pParameters.query.hasOwnProperty('parameterTypes')){pParameters.query.parameterTypes={};}return' ['+pParameters.scope+']';};// MSSQL integer parameter types, narrowest first, as { Signed, bits }.
+// TinyInt is the only unsigned one.
+var MSSQL_INTEGER_PARAMETER_TYPES=[['TinyInt',false,8],['SmallInt',true,16],['Int',true,32],['BigInt',true,64]];/**
+	 * Inclusive range of an integer type: Precision digits in base Radix
+	 * (2 = bits, 10 = decimal digits), signed or not.
+	 *
+	 * @param {boolean} pSigned
+	 * @param {number} pPrecision
+	 * @param {number} pRadix
+	 * @return {{ Min: bigint, Max: bigint }}
+	 */var getIntegerRange=function(pSigned,pPrecision,pRadix){let tmpPrecision=BigInt(pPrecision);if(pRadix===10){let tmpMax=10n**tmpPrecision-1n;return{Min:pSigned?-tmpMax:0n,Max:tmpMax};}if(!pSigned){return{Min:0n,Max:2n**tmpPrecision-1n};}return{Min:-(2n**(tmpPrecision-1n)),Max:2n**(tmpPrecision-1n)-1n};};/**
+	 * The narrowest MSSQL parameter type that accepts every value of a column's
+	 * logical integer type (Stricture's Signed / Precision / Radix on the schema
+	 * entry).  MSSQL has no unsigned types beyond TinyInt, so an unsigned 32-bit
+	 * column binds as BigInt: an Int parameter rejects values above
+	 * 2,147,483,647 before the query is even sent.
+	 *
+	 * Schemas compiled before those fields existed fall back to what the type
+	 * has always meant: identities are unsigned 32-bit, other integers Int.
+	 *
+	 * @param {Object|null} pSchemaEntry - Meadow schema entry for the column
+	 * @param {string} pType - The entry's Meadow Type
+	 * @return {string} TinyInt, SmallInt, Int or BigInt
+	 */var getMSSQLIntegerParameterType=function(pSchemaEntry,pType){if(!pSchemaEntry||typeof pSchemaEntry.Precision!=='number'){return pType==='AutoIdentity'?'BigInt':'Int';}let tmpWanted=getIntegerRange(pSchemaEntry.Signed!==false,pSchemaEntry.Precision,typeof pSchemaEntry.Radix==='number'?pSchemaEntry.Radix:2);for(let i=0;i<MSSQL_INTEGER_PARAMETER_TYPES.length;i++){let tmpRange=getIntegerRange(MSSQL_INTEGER_PARAMETER_TYPES[i][1],MSSQL_INTEGER_PARAMETER_TYPES[i][2],2);if(tmpRange.Min<=tmpWanted.Min&&tmpRange.Max>=tmpWanted.Max){return MSSQL_INTEGER_PARAMETER_TYPES[i][0];}}return'BigInt';};var generateMSSQLParameterTypeEntry=function(pParameters,pColumnParameterName,pColumn){// Lazily create the parameterTypes object if it doesn't exist
 if(!pParameters.query.hasOwnProperty('parameterTypes')){pParameters.query.parameterTypes={};}// Find the column parameter type for our prepared statement
-let tmpColumnParameterTypeString='VarChar';if(typeof pColumn=='object'){// See if it has a type, set the type string
-tmpColumnParameterTypeString=pColumn.Type;}else if(typeof pColumn=='string'){var tmpSchema=Array.isArray(pParameters.query.schema)?pParameters.query.schema:[];for(let i=0;i<tmpSchema.length;i++){if(tmpSchema[i].Column==pColumn){tmpColumnParameterTypeString=tmpSchema[i].Type;break;}}}else{_Fable.log.warn(`Meadow MSSQL query attempted to add a parameter type but no valid column schema entry object or column name was passed; parameter name ${pColumnParameterName}.`);}if(tmpColumnParameterTypeString==null||tmpColumnParameterTypeString==undefined){return false;}switch(tmpColumnParameterTypeString){case'AutoIdentity':case'CreateIDUser':case'UpdateIDUser':case'DeleteIDUser':case'Integer':pParameters.query.parameterTypes[pColumnParameterName]='Int';break;case'Deleted':case'Boolean':pParameters.query.parameterTypes[pColumnParameterName]='TinyInt';break;case'Decimal':pParameters.query.parameterTypes[pColumnParameterName]='Decimal';break;case'String':case'AutoGUID':pParameters.query.parameterTypes[pColumnParameterName]='VarChar';break;case'CreateDate':case'UpdateDate':case'DeleteDate':case'DateTime':pParameters.query.parameterTypes[pColumnParameterName]='DateTime';break;default:// TODO: This might should throw?  It would mean a new type was added to stricture we don't know about.
+let tmpColumnParameterTypeString='VarChar';let tmpSchemaEntry=null;if(typeof pColumn=='object'){// See if it has a type, set the type string
+tmpColumnParameterTypeString=pColumn.Type;tmpSchemaEntry=pColumn;}else if(typeof pColumn=='string'){var tmpSchema=Array.isArray(pParameters.query.schema)?pParameters.query.schema:[];for(let i=0;i<tmpSchema.length;i++){if(tmpSchema[i].Column==pColumn){tmpColumnParameterTypeString=tmpSchema[i].Type;tmpSchemaEntry=tmpSchema[i];break;}}}else{_Fable.log.warn(`Meadow MSSQL query attempted to add a parameter type but no valid column schema entry object or column name was passed; parameter name ${pColumnParameterName}.`);}if(tmpColumnParameterTypeString==null||tmpColumnParameterTypeString==undefined){return false;}switch(tmpColumnParameterTypeString){case'AutoIdentity':case'CreateIDUser':case'UpdateIDUser':case'DeleteIDUser':case'Integer':pParameters.query.parameterTypes[pColumnParameterName]=getMSSQLIntegerParameterType(tmpSchemaEntry,tmpColumnParameterTypeString);break;case'Deleted':case'Boolean':pParameters.query.parameterTypes[pColumnParameterName]='TinyInt';break;case'Decimal':pParameters.query.parameterTypes[pColumnParameterName]='Decimal';break;case'String':case'AutoGUID':pParameters.query.parameterTypes[pColumnParameterName]='VarChar';break;case'CreateDate':case'UpdateDate':case'DeleteDate':case'DateTime':pParameters.query.parameterTypes[pColumnParameterName]='DateTime';break;default:// TODO: This might should throw?  It would mean a new type was added to stricture we don't know about.
 pParameters.query.parameterTypes[pColumnParameterName]=tmpColumnParameterTypeString;return false;}return true;};/**
 	* Generate a field list from the array of dataElements
 	*
@@ -3367,6 +3424,52 @@ for(var tmpColumn in tmpRecords[0]){// No hash table yet, so, we will just linea
 var tmpSchemaEntry={Column:tmpColumn,Type:'Default'};for(var i=0;i<tmpSchema.length;i++){if(tmpColumn==tmpSchema[i].Column){// There is a schema entry for it.  Process it accordingly.
 tmpSchemaEntry=tmpSchema[i];break;}}if(!pParameters.query.disableDeleteTracking){if(tmpSchemaEntry.Type==='DeleteDate'||tmpSchemaEntry.Type==='DeleteIDUser'){// These are all ignored on insert (if delete tracking is enabled as normal)
 continue;}}switch(tmpSchemaEntry.Type){case'JSON':if(tmpCreateSet!=''){tmpCreateSet+=',';}tmpCreateSet+=' '+tmpColumn;break;case'JSONProxy':if(tmpCreateSet!=''){tmpCreateSet+=',';}tmpCreateSet+=' '+tmpSchemaEntry.StorageColumn;break;default:if(tmpCreateSet!=''){tmpCreateSet+=',';}tmpCreateSet+=' '+tmpColumn;break;}}return tmpCreateSet;};var Create=function(pParameters){var tmpTableName=generateTableName(pParameters);var tmpCreateSetList=generateCreateSetList(pParameters);var tmpCreateSetValues=generateCreateSetValues(pParameters);if(!tmpCreateSetValues){return false;}return'INSERT INTO'+tmpTableName+' ('+tmpCreateSetList+') VALUES ('+tmpCreateSetValues+');';};/**
+	* Compute the row window a single branch must return.
+	*
+	* The outer query pages with (begin, cap); the true top (begin+cap) of the combined set is
+	* always contained in the union of each branch's own top (begin+cap), so that is all any
+	* branch has to produce. Without an outer cap the branches stay unlimited.
+	*
+	* @method: generateBranchWindow
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {Number} Returns the per-branch cap, or 0 for unlimited
+	*/var generateBranchWindow=function(pParameters){if(!pParameters.cap){return 0;}var tmpBegin=pParameters.begin===false?0:parseInt(pParameters.begin,10)||0;return tmpBegin+parseInt(pParameters.cap,10);};/**
+	* Widen a branch's select list to carry every column the outer sort needs.
+	*
+	* The outer statement sorts the derived table, so any sort column missing from the branches is
+	* missing from the union and the outer ORDER BY fails. The default list is `<scope>.*`, which
+	* already carries them; only an explicit data element list has to be widened. The outer select
+	* still returns exactly what the caller asked for.
+	*
+	* @method: generateBranchDataElements
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {Array} Returns the data elements a branch should select
+	*/var generateBranchDataElements=function(pParameters){var tmpDataElements=pParameters.dataElements;if(!Array.isArray(tmpDataElements)||tmpDataElements.length<1){return tmpDataElements;}var tmpElements=tmpDataElements.slice();var tmpSort=resolveStableSort(pParameters);for(var i=0;i<tmpSort.length;i++){var tmpSortColumn=String(tmpSort[i].Column).split('.').pop();var tmpPresent=false;for(var j=0;j<tmpElements.length;j++){var tmpEntry=Array.isArray(tmpElements[j])?tmpElements[j][1]||tmpElements[j][0]:tmpElements[j];if(String(tmpEntry).split('.').pop()===tmpSortColumn){tmpPresent=true;break;}}if(!tmpPresent){// Qualify with the scope: a branch join can bring in a column of the same name,
+// which would make a bare name ambiguous in the select list.
+var tmpColumn=tmpSort[i].Column;if(String(tmpColumn).indexOf('.')<0&&typeof pParameters.scope==='string'&&pParameters.scope.indexOf('.')<0&&pParameters.scope.indexOf('`')<0){tmpColumn=pParameters.scope+'.'+tmpColumn;}tmpElements.push(tmpColumn);}}return tmpElements;};/**
+	* Generate one branch of a branched read: the base query with this branch's joins and filters
+	* layered on, sorted the same way, and limited to the outer window.
+	*
+	* @method: generateBranchSelect
+	* @param: {Object} pParameters SQL Query Parameters
+	* @param: {Object} pBranch The branch definition ({join, filter})
+	* @param: {Number} pBranchIndex Ordinal of this branch, used to namespace its parameters
+	* @return: {String} Returns a parenthesized SELECT statement
+	*/var generateBranchSelect=function(pParameters,pBranch,pBranchIndex){var tmpFilter=Array.isArray(pParameters.filter)?pParameters.filter.slice():[];if(Array.isArray(pBranch.filter)){for(var i=0;i<pBranch.filter.length;i++){var tmpEntry=pBranch.filter[i];// Branch filter parameters are namespaced by branch ordinal. generateWhere names
+// parameters `<Parameter>_w<offset>`, so two branches filtering the same column at
+// the same offset would collide and the second value would overwrite the first.
+tmpFilter.push(Object.assign({},tmpEntry,{Parameter:'b'+pBranchIndex+'_'+(tmpEntry.Parameter||tmpEntry.Column)}));}}var tmpJoin=Array.isArray(pParameters.join)?pParameters.join.slice():[];if(Array.isArray(pBranch.join)){tmpJoin=tmpJoin.concat(pBranch.join);}var tmpBranchParameters=Object.assign({},pParameters,{dataElements:generateBranchDataElements(pParameters),filter:tmpFilter,join:tmpJoin,queryBranches:false,begin:0,cap:generateBranchWindow(pParameters)});var tmpOptDistinct=pParameters.distinct?' DISTINCT':'';return'(SELECT'+tmpOptDistinct+generateFieldList(tmpBranchParameters)+' FROM'+generateTableName(tmpBranchParameters)+generateIndexHints(tmpBranchParameters)+generateJoins(tmpBranchParameters)+generateWhere(tmpBranchParameters)+generateOrderBy(tmpBranchParameters)+generateLimit(tmpBranchParameters)+')';};/**
+	* Read records reachable by more than one independent path.
+	*
+	* Each branch becomes its own SELECT, UNIONed into a derived table aliased back to the scope so
+	* the caller's field list and sort still resolve. Expressing the same thing as a flat OR lets the
+	* optimizer drive off none of the paths; this way each branch is satisfied from its own index and
+	* stops at the outer window.
+	*
+	* @method: ReadWithBranches
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the query
+	*/var ReadWithBranches=function(pParameters){var tmpBranches=pParameters.queryBranches;var tmpSelects=[];for(var i=0;i<tmpBranches.length;i++){tmpSelects.push(generateBranchSelect(pParameters,tmpBranches[i],i));}var tmpOuterParameters=Object.assign({},pParameters,{queryBranches:false});var tmpOptDistinct=pParameters.distinct?' DISTINCT':'';return'SELECT'+tmpOptDistinct+generateFieldList(tmpOuterParameters)+' FROM ('+tmpSelects.join(' UNION ')+') AS'+generateTableName(tmpOuterParameters)+generateOrderBy(tmpOuterParameters)+generateLimit(tmpOuterParameters)+';';};/**
 	* Read one or many records
 	*
 	* Some examples:
@@ -3379,7 +3482,10 @@ continue;}}switch(tmpSchemaEntry.Type){case'JSON':if(tmpCreateSet!=''){tmpCreate
 	* @method Read
 	* @param {Object} pParameters SQL Query parameters
 	* @return {String} Returns the current Query for chaining.
-	*/var Read=function(pParameters){var tmpFieldList=generateFieldList(pParameters);var tmpTableName=generateTableName(pParameters);var tmpWhere=generateWhere(pParameters);var tmpJoin=generateJoins(pParameters);var tmpOrderBy=generateOrderBy(pParameters);var tmpLimit=generateLimit(pParameters);var tmpIndexHints=generateIndexHints(pParameters);const tmpOptDistinct=pParameters.distinct?' DISTINCT':'';if(pParameters.queryOverride){try{var tmpQueryTemplate=_Fable.Utility.template(pParameters.queryOverride);return tmpQueryTemplate({FieldList:tmpFieldList,TableName:tmpTableName,Where:tmpWhere,Join:tmpJoin,OrderBy:tmpOrderBy,Limit:tmpLimit,IndexHints:tmpIndexHints,Distinct:tmpOptDistinct,_Params:pParameters});}catch(pError){// This pokemon is here to give us a convenient way of not throwing up totally if the query fails.
+	*/var Read=function(pParameters){// Dispatch before the base generators run: generateWhere mutates pParameters.filter by
+// appending the schema's Deleted clause, and each branch has to start from the caller's
+// filters rather than from an already-decorated copy.
+if(Array.isArray(pParameters.queryBranches)&&pParameters.queryBranches.length>0&&!pParameters.queryOverride){return ReadWithBranches(pParameters);}var tmpFieldList=generateFieldList(pParameters);var tmpTableName=generateTableName(pParameters);var tmpWhere=generateWhere(pParameters);var tmpJoin=generateJoins(pParameters);var tmpOrderBy=generateOrderBy(pParameters);var tmpLimit=generateLimit(pParameters);var tmpIndexHints=generateIndexHints(pParameters);const tmpOptDistinct=pParameters.distinct?' DISTINCT':'';if(pParameters.queryOverride){try{var tmpQueryTemplate=_Fable.Utility.template(pParameters.queryOverride);return tmpQueryTemplate({FieldList:tmpFieldList,TableName:tmpTableName,Where:tmpWhere,Join:tmpJoin,OrderBy:tmpOrderBy,Limit:tmpLimit,IndexHints:tmpIndexHints,Distinct:tmpOptDistinct,_Params:pParameters});}catch(pError){// This pokemon is here to give us a convenient way of not throwing up totally if the query fails.
 console.log('Error with custom Read Query ['+pParameters.queryOverride+']: '+pError);return false;}}return`SELECT${tmpOptDistinct}${tmpFieldList} FROM${tmpTableName}${tmpIndexHints}${tmpJoin}${tmpWhere}${tmpOrderBy}${tmpLimit};`;};var Update=function(pParameters){var tmpTableName=generateTableName(pParameters);var tmpWhere=generateWhere(pParameters);var tmpUpdateSetters=generateUpdateSetters(pParameters);if(!tmpUpdateSetters){return false;}return'UPDATE'+tmpTableName+' SET'+tmpUpdateSetters+tmpWhere+';';};var Delete=function(pParameters){var tmpTableName=generateTableName(pParameters);var tmpWhere=generateWhere(pParameters);var tmpUpdateDeleteSetters=generateUpdateDeleteSetters(pParameters);if(tmpUpdateDeleteSetters){//If it has a deleted bit, update it instead of actually deleting the record
 return'UPDATE'+tmpTableName+' SET'+tmpUpdateDeleteSetters+tmpWhere+';';}else{return'DELETE FROM'+tmpTableName+tmpWhere+';';}};var Undelete=function(pParameters){var tmpTableName=generateTableName(pParameters);// TODO: Fix these
 let tmpDeleteTrackingState=pParameters.query.disableDeleteTracking;pParameters.query.disableDeleteTracking=true;var tmpWhere=generateWhere(pParameters);var tmpUpdateUndeleteSetters=generateUpdateUndeleteSetters(pParameters);pParameters.query.disableDeleteTracking=tmpDeleteTrackingState;if(tmpUpdateUndeleteSetters){//If the table has a deleted bit, go forward with the update to change things.
@@ -6938,13 +7044,21 @@ function(fStageComplete){if(pMeadow.rawQueries.checkQuery('Delete')){pQuery.para
 * @license MIT
 * @author <steven@velozo.com>
 */var libAsyncWaterfall=require('async/waterfall');/**
+* Whether the query's only filter is equality on the identity column, so it already addresses at most one record.
+*
+* @param {Object} pMeadow
+* @param {Object} pQuery
+* @return {boolean}
+*/var isIdentityRead=function(pMeadow,pQuery){var tmpFilter=pQuery.parameters.filter;return Array.isArray(tmpFilter)&&tmpFilter.length==1&&tmpFilter[0].Column===pMeadow.defaultIdentifier&&tmpFilter[0].Operator==='=';};/**
 * Meadow Behavior - Read a single record
 *
 * @function meadowBehaviorRead
 */var meadowBehaviorRead=function(pMeadow,pQuery,fCallBack){// Read the record from the source
 libAsyncWaterfall([// Step 1: Get the record from the data source
 function(fStageComplete){// If there is a Read override query, use it!
-if(pMeadow.rawQueries.checkQuery('Read')){pQuery.parameters.queryOverride=pMeadow.rawQueries.getQuery('Read');}pMeadow.provider.Read(pQuery,function(){fStageComplete(pQuery.result.error,pQuery);});},// Step 2: Marshal the record into a POJO
+if(pMeadow.rawQueries.checkQuery('Read')){pQuery.parameters.queryOverride=pMeadow.rawQueries.getQuery('Read');}// Only the first row is used.  Identity reads are left uncapped so providers that route them to a single-record endpoint still do.
+if(!pQuery.parameters.cap&&!isIdentityRead(pMeadow,pQuery)){pQuery.setCap(1);// Any matching row will do; an added ORDER BY on the identity can steer MySQL into walking the primary key instead of the filter's index.
+pQuery.parameters.disableStableSort=true;}pMeadow.provider.Read(pQuery,function(){fStageComplete(pQuery.result.error,pQuery);});},// Step 2: Marshal the record into a POJO
 function(pQuery,fStageComplete){// Check that a record was returned
 if(pQuery.parameters.result.value.length<1){return fStageComplete(undefined,pQuery,false);}var tmpRecord=pMeadow.marshalRecordFromSourceToObject(pQuery.result.value[0]);fStageComplete(pQuery.result.error,pQuery,tmpRecord);}],(pError,pQuery,pRecord)=>{if(pError){pMeadow.fable.log.warn('Error during the read waterfall',{Error:pError,Message:pError.message,Query:pQuery.query});}fCallBack(pError,pQuery,pRecord);});return pMeadow;};module.exports=meadowBehaviorRead;},{"async/waterfall":32}],338:[function(require,module,exports){// ##### Part of the **[retold](https://fable-retold.io/)** system
 /**

@@ -6,6 +6,22 @@
 var libAsyncWaterfall = require('async/waterfall');
 
 /**
+* Whether the query's only filter is equality on the identity column, so it already addresses at most one record.
+*
+* @param {Object} pMeadow
+* @param {Object} pQuery
+* @return {boolean}
+*/
+var isIdentityRead = function(pMeadow, pQuery)
+{
+	var tmpFilter = pQuery.parameters.filter;
+	return Array.isArray(tmpFilter)
+		&& (tmpFilter.length == 1)
+		&& (tmpFilter[0].Column === pMeadow.defaultIdentifier)
+		&& (tmpFilter[0].Operator === '=');
+};
+
+/**
 * Meadow Behavior - Read a single record
 *
 * @function meadowBehaviorRead
@@ -22,6 +38,13 @@ var meadowBehaviorRead = function(pMeadow, pQuery, fCallBack)
 				if (pMeadow.rawQueries.checkQuery('Read'))
 				{
 					pQuery.parameters.queryOverride = pMeadow.rawQueries.getQuery('Read');
+				}
+				// Only the first row is used.  Identity reads are left uncapped so providers that route them to a single-record endpoint still do.
+				if (!pQuery.parameters.cap && !isIdentityRead(pMeadow, pQuery))
+				{
+					pQuery.setCap(1);
+					// Any matching row will do; an added ORDER BY on the identity can steer MySQL into walking the primary key instead of the filter's index.
+					pQuery.parameters.disableStableSort = true;
 				}
 				pMeadow.provider.Read(pQuery, function(){ fStageComplete(pQuery.result.error, pQuery); });
 			},
