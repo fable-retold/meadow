@@ -216,6 +216,79 @@ suite
 				);
 				test
 				(
+					'Read by a non-identity filter asks the provider for at most one row',
+					function(fDone)
+					{
+						var testMeadow = newMeadow();
+
+						var tmpQuery = testMeadow.query
+							.addFilter('Type', 'Dog');
+
+						testMeadow.doRead(tmpQuery,
+							function(pError, pQuery, pRecord)
+							{
+								Expect(pRecord.Type)
+									.to.equal('Dog');
+								Expect(pQuery.parameters.cap)
+									.to.equal(1);
+								Expect(pQuery.query.body)
+									.to.contain('LIMIT 1');
+								Expect(pQuery.query.body)
+									.to.not.contain('ORDER BY');
+								fDone();
+							}
+						)
+					}
+				);
+				test
+				(
+					'Read by identity alone is left uncapped',
+					function(fDone)
+					{
+						var testMeadow = newMeadow();
+
+						var tmpQuery = testMeadow.query
+							.addFilter('IDAnimal', 1);
+
+						testMeadow.doRead(tmpQuery,
+							function(pError, pQuery, pRecord)
+							{
+								Expect(pRecord.IDAnimal)
+									.to.equal(1);
+								Expect(pQuery.parameters.cap)
+									.to.equal(false);
+								Expect(pQuery.query.body)
+									.to.not.contain('LIMIT');
+								fDone();
+							}
+						)
+					}
+				);
+				test
+				(
+					'Read keeps a cap the caller already set',
+					function(fDone)
+					{
+						var testMeadow = newMeadow();
+
+						var tmpQuery = testMeadow.query
+							.addFilter('Type', 'Dog')
+							.setCap(2);
+
+						testMeadow.doRead(tmpQuery,
+							function(pError, pQuery, pRecord)
+							{
+								Expect(pRecord.Type)
+									.to.equal('Dog');
+								Expect(pQuery.parameters.cap)
+									.to.equal(2);
+								fDone();
+							}
+						)
+					}
+				);
+				test
+				(
 					'Read all records from the database',
 					function(fDone)
 					{
@@ -305,7 +378,7 @@ suite
 							{
 								// TODO: Research why this is working but not returning the row count
 								Expect(pRecord)
-									.to.equal(0);
+									.to.equal(1);
 
 								testMeadow.fable.settings.QueryThresholdWarnTime = 1000;
 
@@ -327,9 +400,9 @@ suite
 						testMeadow.doCount(testMeadow.query,
 							function(pError, pQuery, pRecord)
 							{
-								// There should be 5 records
+								// There should be 6 records
 								Expect(pRecord)
-									.to.equal(5);
+									.to.equal(6);
 								Expect(pQuery.parameters.result.executed)
 									.to.equal(true);
 								testMeadow.fable.settings.QueryThresholdWarnTime = 1000;
@@ -542,9 +615,9 @@ suite
 						testMeadow.doCount(testMeadow.query.setLogLevel(5),
 							function(pError, pQuery, pRecord)
 							{
-								// There should be 6 records
+								// There should be 7 records .. we undeleted one!
 								Expect(pRecord)
-									.to.equal(6);
+									.to.equal(7);
 								fDone();
 							}
 						)
